@@ -18,13 +18,14 @@ const minSpace = 10
 // TODO: use ansi colors only
 var (
 	bg             = lipgloss.Color("235")
-	codeBlockStyle = lipgloss.NewStyle().Background(bg).MarginLeft(2).Padding(1, 2)
+	codeBlockStyle = lipgloss.NewStyle().Background(bg).MarginLeft(2).Padding(1, 3, 0, 1)
 	programStyle   = lipgloss.NewStyle().Background(bg).Foreground(lipgloss.Color("#7E65FF")).PaddingLeft(1)
 	commentStyle   = lipgloss.NewStyle().Background(bg).Foreground(lipgloss.BrightBlack).PaddingLeft(1)
 	stringStyle    = lipgloss.NewStyle().Background(bg).Foreground(lipgloss.Color("#02BF87")).PaddingLeft(1)
 	argumentStyle  = lipgloss.NewStyle().Background(bg).Foreground(lipgloss.Color("248")).PaddingLeft(1)
 	flagStyle      = lipgloss.NewStyle().Background(bg).Foreground(lipgloss.Color("244")).PaddingLeft(1)
 	titleStyle     = lipgloss.NewStyle().Bold(true).Transform(strings.ToUpper).Margin(1, 0, 0, 2).Foreground(lipgloss.Color("#6C50FF"))
+	spanStyle      = lipgloss.NewStyle().Background(bg)
 
 	dashStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("240")).MarginLeft(1)
 	helpStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("243"))
@@ -98,16 +99,22 @@ func usage(c *cobra.Command) []string {
 		),
 	}
 
+	size := lipgloss.Width(usage[0])
 	examples := strings.Split(c.Example, "\n")
 	for i, line := range examples {
 		line = strings.TrimSpace(line)
-		if line == "" && i < len(examples)-1 {
-			usage = append(usage, "")
+		if line == "" && i != len(examples)-1 {
+			usage = append(usage, " ")
 			continue
 		}
 
 		if strings.HasPrefix(line, "# ") {
-			usage = append(usage, commentStyle.Render(line))
+			s := lipgloss.JoinHorizontal(
+				lipgloss.Left,
+				commentStyle.Render(line),
+			)
+			size = max(size, lipgloss.Width(s))
+			usage = append(usage, s)
 			continue
 		}
 
@@ -120,12 +127,23 @@ func usage(c *cobra.Command) []string {
 			args[i] = argumentStyle.Render(arg)
 		}
 
-		usage = append(usage, lipgloss.JoinHorizontal(
+		s := lipgloss.JoinHorizontal(
 			lipgloss.Left,
 			args...,
-		))
+		)
+		size = max(size, lipgloss.Width(s))
+		usage = append(usage, s)
 	}
 
+	for i, use := range usage {
+		if usize := lipgloss.Width(use); size > usize {
+			usage[i] = lipgloss.JoinHorizontal(
+				lipgloss.Left,
+				use,
+				spanStyle.Render(strings.Repeat(" ", size-usize)),
+			)
+		}
+	}
 	return usage
 }
 
