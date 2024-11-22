@@ -2,6 +2,8 @@
 
 An experimental small library to make user friendly [cobra][] commands.
 
+<p><img src="https://github.com/user-attachments/assets/38c4e0ba-cebd-4455-bd14-edc664651123" width="766"></p>
+
 ## Features
 
 - Beautiful help pages: styled help and usage pages
