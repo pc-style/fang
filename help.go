@@ -3,6 +3,7 @@ package serpentine
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/charmbracelet/colorprofile"
@@ -82,6 +83,8 @@ func helpFn(c *cobra.Command, args []string) {
 	}
 }
 
+var otherArgsRe = regexp.MustCompile(`(\[.*\])`)
+
 // use stylized use line for a given command.
 func use(c *cobra.Command, inline bool) string {
 	u := c.Use
@@ -95,6 +98,13 @@ func use(c *cobra.Command, inline bool) string {
 	} {
 		u = strings.ReplaceAll(u, k, "")
 	}
+
+	var otherArgs []string
+	for _, arg := range otherArgsRe.FindAllString(u, -1) {
+		u = strings.ReplaceAll(u, arg, "")
+		otherArgs = append(otherArgs, arg)
+	}
+
 	u = strings.TrimSpace(u)
 
 	programStyle := programStyle
@@ -109,11 +119,14 @@ func use(c *cobra.Command, inline bool) string {
 	if hasCommands {
 		useLine = append(useLine, argumentStyle.Render("[command]"))
 	}
-	if hasFlags {
-		useLine = append(useLine, flagStyle.Render("[--flags]"))
-	}
 	if hasArgs {
 		useLine = append(useLine, argumentStyle.Render("[args]"))
+	}
+	for _, arg := range otherArgs {
+		useLine = append(useLine, argumentStyle.Render(arg))
+	}
+	if hasFlags {
+		useLine = append(useLine, flagStyle.Render("[--flags]"))
 	}
 	return lipgloss.JoinHorizontal(lipgloss.Left, useLine...)
 }
