@@ -168,7 +168,7 @@ func evalFlags(c *cobra.Command) map[string]string {
 		}
 		key := lipgloss.JoinHorizontal(lipgloss.Left, parts...)
 		help := helpStyle.Render(f.Usage)
-		if f.DefValue != "" {
+		if f.DefValue != "" && f.DefValue != "false" && f.DefValue != "0" {
 			help = lipgloss.JoinHorizontal(
 				lipgloss.Left,
 				help,
