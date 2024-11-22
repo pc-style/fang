@@ -150,6 +150,9 @@ func usage(c *cobra.Command) []string {
 func evalFlags(c *cobra.Command) map[string]string {
 	flags := map[string]string{}
 	c.Flags().VisitAll(func(f *pflag.Flag) {
+		if f.Hidden {
+			return
+		}
 		var parts []string
 		if f.Shorthand == "" {
 			parts = append(
@@ -186,6 +189,9 @@ func evalCmds(c *cobra.Command) map[string]string {
 	pad := lipgloss.NewStyle().PaddingLeft(3)
 	cmds := map[string]string{}
 	for _, sc := range c.Commands() {
+		if sc.Hidden {
+			continue
+		}
 		key := pad.Render(sc.Use)
 		// handles native commands, such as 'help', which report use as `help [command]`.
 		if strings.Contains(key, "[command]") {
