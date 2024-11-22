@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/charmbracelet/serpentine"
 	"github.com/spf13/cobra"
@@ -10,31 +11,36 @@ import (
 
 func main() {
 	cmd := &cobra.Command{
-		Use:   "foo",
-		Short: "foo is bar",
-		Long: `Foo is bar!
-This is a new thing we made!`,
+		Use:   "example [args]",
+		Short: "A simple example program!",
+		Long: `A simple example program!
+
+This is an example program we made for serpentine!`,
 		Example: `
-# bla bla bla
+# Run it:
 example
 
-# bla bla bla
+# Run it with some argument:
 example --foo=xyz
 		`,
-		Args: cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
-			// nothing
-		},
+		Args: cobra.ArbitraryArgs,
+		Run:  func(cmd *cobra.Command, args []string) {},
 	}
 	var foo string
-	cmd.PersistentFlags().StringVarP(&foo, "foo", "f", "abc", "foo does something")
-	cmd.Flags().StringVar(&foo, "bar", "lalala", "something something something")
+	var bar int
+	var zaz float64
+	var d time.Duration
+	cmd.PersistentFlags().StringVarP(&foo, "surname", "s", "doe", "Your surname")
+	cmd.Flags().StringVar(&foo, "name", "john", "Your name")
+	cmd.Flags().DurationVar(&d, "duration", 0, "Time since your last commit")
+	cmd.Flags().IntVar(&bar, "age", 0, "Your age")
+	cmd.Flags().Float64Var(&zaz, "idk", 0.0, "I don't know")
 
 	serpentine.Setup(cmd)
 
 	cmd.AddCommand(&cobra.Command{
-		Use:   "another",
-		Short: "hello world",
+		Use:   "sub [command] [flags] [args]",
+		Short: "An example sub command",
 	})
 	if err := cmd.Execute(); err != nil {
 		fmt.Println(err)

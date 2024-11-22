@@ -2,9 +2,7 @@ package serpentine
 
 import (
 	"fmt"
-	"maps"
 	"os"
-	"slices"
 	"strings"
 
 	"github.com/charmbracelet/colorprofile"
@@ -53,18 +51,19 @@ func helpFn(c *cobra.Command, args []string) {
 		),
 	)
 
-	cmds, flags := evalCmds(c), evalFlags(c)
-	space := calculateSpace(cmds, flags)
+	cmds, cmdKeys := evalCmds(c)
+	flags, flagKeys := evalFlags(c)
+	space := calculateSpace(cmdKeys, flagKeys)
 
 	if len(cmds) > 0 {
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, titleStyle.Render("commands"))
-		for k, v := range cmds {
+		for _, k := range cmdKeys {
 			fmt.Fprintln(w, lipgloss.JoinHorizontal(
 				lipgloss.Left,
 				k,
 				strings.Repeat(" ", space-lipgloss.Width(k)),
-				v,
+				cmds[k],
 			))
 		}
 	}
@@ -72,32 +71,57 @@ func helpFn(c *cobra.Command, args []string) {
 	if len(flags) > 0 {
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, titleStyle.Render("flags"))
-		for k, v := range flags {
+		for _, k := range flagKeys {
 			fmt.Fprintln(w, lipgloss.JoinHorizontal(
 				lipgloss.Left,
 				k,
 				strings.Repeat(" ", space-lipgloss.Width(k)),
-				v,
+				flags[k],
 			))
 		}
 	}
 }
 
-func usage(c *cobra.Command) []string {
-	useLine := []string{programStyle.Render(c.Use)}
-	if c.HasSubCommands() {
+// use stylized use line for a given command.
+func use(c *cobra.Command, inline bool) string {
+	u := c.Use
+	hasArgs := strings.Contains(u, "[args]")
+	hasFlags := strings.Contains(u, "[flags]") || strings.Contains(u, "[--flags]") || c.HasFlags() || c.HasPersistentFlags() || c.HasAvailableFlags()
+	hasCommands := strings.Contains(u, "[command]") || c.HasAvailableSubCommands()
+	for _, k := range []string{
+		"[args]",
+		"[flags]", "[--flags]",
+		"[command]",
+	} {
+		u = strings.ReplaceAll(u, k, "")
+	}
+	u = strings.TrimSpace(u)
+
+	programStyle := programStyle
+	argumentStyle := argumentStyle
+	flagStyle := flagStyle
+	if inline {
+		programStyle = programStyle.UnsetBackground()
+		argumentStyle = argumentStyle.UnsetBackground()
+		flagStyle = flagStyle.UnsetBackground()
+	}
+	useLine := []string{programStyle.Render(u)}
+	if hasCommands {
 		useLine = append(useLine, argumentStyle.Render("[command]"))
 	}
-	if c.HasFlags() || c.HasPersistentFlags() {
+	if hasFlags {
 		useLine = append(useLine, flagStyle.Render("[--flags]"))
 	}
-
-	usage := []string{
-		lipgloss.JoinHorizontal(
-			lipgloss.Left,
-			useLine...,
-		),
+	if hasArgs {
+		useLine = append(useLine, argumentStyle.Render("[args]"))
 	}
+	return lipgloss.JoinHorizontal(lipgloss.Left, useLine...)
+}
+
+// usage for a given command.
+// will print both the cmd.Use and cmd.Example bits.
+func usage(c *cobra.Command) []string {
+	usage := []string{use(c, false)}
 
 	size := lipgloss.Width(usage[0])
 	examples := strings.Split(c.Example, "\n")
@@ -147,8 +171,9 @@ func usage(c *cobra.Command) []string {
 	return usage
 }
 
-func evalFlags(c *cobra.Command) map[string]string {
+func evalFlags(c *cobra.Command) (map[string]string, []string) {
 	flags := map[string]string{}
+	keys := []string{}
 	c.Flags().VisitAll(func(f *pflag.Flag) {
 		if f.Hidden {
 			return
@@ -174,45 +199,36 @@ func evalFlags(c *cobra.Command) map[string]string {
 		if f.DefValue != "" && f.DefValue != "false" && f.DefValue != "0" {
 			help = lipgloss.JoinHorizontal(
 				lipgloss.Left,
-				help,
-				helpStyle.Render(" ("),
+				helpStyle.Render(f.Usage+" ("),
 				keywordStyle.Render(f.DefValue),
 				helpStyle.Render(")"),
 			)
 		}
 		flags[key] = help
+		keys = append(keys, key)
 	})
-	return flags
+	return flags, keys
 }
 
-func evalCmds(c *cobra.Command) map[string]string {
+func evalCmds(c *cobra.Command) (map[string]string, []string) {
+	keys := []string{}
 	pad := lipgloss.NewStyle().PaddingLeft(3)
 	cmds := map[string]string{}
 	for _, sc := range c.Commands() {
 		if sc.Hidden {
 			continue
 		}
-		key := pad.Render(sc.Use)
-		// handles native commands, such as 'help', which report use as `help [command]`.
-		if strings.Contains(key, "[command]") {
-			key = lipgloss.JoinHorizontal(
-				lipgloss.Left,
-				pad.Render(strings.TrimSuffix(sc.Use, " [command]")),
-				argumentStyle.UnsetBackground().Render("[command]"),
-			)
-		}
+		key := pad.Render(use(sc, true))
 		help := helpStyle.Render(sc.Short)
 		cmds[key] = help
+		keys = append(keys, key)
 	}
-	return cmds
+	return cmds, keys
 }
 
-func calculateSpace(m1, m2 map[string]string) int {
+func calculateSpace(k1, k2 []string) int {
 	space := minSpace
-	for _, k := range append(
-		slices.Collect(maps.Keys(m1)),
-		slices.Collect(maps.Keys(m2))...,
-	) {
+	for _, k := range append(k1, k2...) {
 		space = max(space, lipgloss.Width(k)+2)
 	}
 	return space
