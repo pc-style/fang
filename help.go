@@ -52,50 +52,8 @@ func helpFn(c *cobra.Command, args []string) {
 		),
 	)
 
-	cmds := map[string]string{}
-	for _, sc := range c.Commands() {
-		cmds[lipgloss.NewStyle().PaddingLeft(3).Render(sc.Use)] = helpStyle.Render(sc.Short)
-	}
-
-	flags := map[string]string{}
-	c.Flags().VisitAll(func(f *pflag.Flag) {
-		var parts []string
-		if f.Shorthand == "" {
-			parts = append(
-				parts,
-				dashStyle.PaddingLeft(5).Render("--"),
-				f.Name,
-			)
-		} else {
-			parts = append(
-				parts,
-				dashStyle.PaddingLeft(2).Render("-"),
-				f.Shorthand,
-				dashStyle.Render("--"),
-				f.Name,
-			)
-		}
-		key := lipgloss.JoinHorizontal(lipgloss.Left, parts...)
-		usage := helpStyle.Render(f.Usage)
-		if f.DefValue != "" {
-			usage = lipgloss.JoinHorizontal(
-				lipgloss.Left,
-				usage,
-				helpStyle.Render(" ("),
-				keywordStyle.Render(f.DefValue),
-				helpStyle.Render(")"),
-			)
-		}
-		flags[key] = usage
-	})
-
-	space := minSpace
-	for _, k := range append(
-		slices.Collect(maps.Keys(flags)),
-		slices.Collect(maps.Keys(cmds))...,
-	) {
-		space = max(space, lipgloss.Width(k)+2)
-	}
+	cmds, flags := evalCmds(c), evalFlags(c)
+	space := calculateSpace(cmds, flags)
 
 	if len(cmds) > 0 {
 		fmt.Fprintln(w)
@@ -169,4 +127,69 @@ func usage(c *cobra.Command) []string {
 	}
 
 	return usage
+}
+
+func evalFlags(c *cobra.Command) map[string]string {
+	flags := map[string]string{}
+	c.Flags().VisitAll(func(f *pflag.Flag) {
+		var parts []string
+		if f.Shorthand == "" {
+			parts = append(
+				parts,
+				dashStyle.PaddingLeft(5).Render("--"),
+				f.Name,
+			)
+		} else {
+			parts = append(
+				parts,
+				dashStyle.PaddingLeft(2).Render("-"),
+				f.Shorthand,
+				dashStyle.Render("--"),
+				f.Name,
+			)
+		}
+		key := lipgloss.JoinHorizontal(lipgloss.Left, parts...)
+		help := helpStyle.Render(f.Usage)
+		if f.DefValue != "" {
+			help = lipgloss.JoinHorizontal(
+				lipgloss.Left,
+				help,
+				helpStyle.Render(" ("),
+				keywordStyle.Render(f.DefValue),
+				helpStyle.Render(")"),
+			)
+		}
+		flags[key] = help
+	})
+	return flags
+}
+
+func evalCmds(c *cobra.Command) map[string]string {
+	pad := lipgloss.NewStyle().PaddingLeft(3)
+	cmds := map[string]string{}
+	for _, sc := range c.Commands() {
+		key := pad.Render(sc.Use)
+		// handles native commands, such as 'help', which report use as `help [command]`.
+		if strings.Contains(key, "[command]") {
+			key = lipgloss.JoinHorizontal(
+				lipgloss.Left,
+				pad.Render(strings.TrimSuffix(sc.Use, " [command]")),
+				argumentStyle.UnsetBackground().Render("[command]"),
+			)
+		}
+		help := helpStyle.Render(sc.Short)
+		cmds[key] = help
+	}
+	return cmds
+}
+
+func calculateSpace(m1, m2 map[string]string) int {
+	space := minSpace
+	for _, k := range append(
+		slices.Collect(maps.Keys(m1)),
+		slices.Collect(maps.Keys(m2))...,
+	) {
+		space = max(space, lipgloss.Width(k)+2)
+	}
+	return space
 }
