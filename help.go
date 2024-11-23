@@ -21,7 +21,7 @@ func helpFn(c *cobra.Command, styles Styles) {
 	if c.Long == "" {
 		_, _ = fmt.Fprintln(w, "  "+c.Short)
 	} else {
-		_, _ = fmt.Fprintln(w, lipgloss.NewStyle().PaddingLeft(shortPad).Render(c.Long))
+		_, _ = fmt.Fprintln(w, styles.Help.PaddingLeft(shortPad).Render(c.Long))
 	}
 	_, _ = fmt.Fprintln(w, styles.Title.Render("usage"))
 	_, _ = fmt.Fprintln(w)
@@ -36,8 +36,8 @@ func helpFn(c *cobra.Command, styles Styles) {
 		),
 	)
 
-	cmds, cmdKeys := evalCmds(c, styles)
-	flags, flagKeys := evalFlags(c, styles)
+	cmds, cmdKeys := evalCmds(c, styles.nobg())
+	flags, flagKeys := evalFlags(c, styles.nobg())
 	space := calculateSpace(cmdKeys, flagKeys)
 
 	if len(cmds) > 0 {
@@ -72,7 +72,7 @@ var otherArgsRe = regexp.MustCompile(`(\[.*\])`)
 // use stylized use line for a given command.
 //
 //nolint:mnd
-func use(c *cobra.Command, styles Styles, inline bool) string {
+func use(c *cobra.Command, styles Styles) string {
 	u := c.Use
 	hasArgs := strings.Contains(u, "[args]")
 	hasFlags := strings.Contains(u, "[flags]") || strings.Contains(u, "[--flags]") || c.HasFlags() || c.HasPersistentFlags() || c.HasAvailableFlags()
@@ -93,26 +93,18 @@ func use(c *cobra.Command, styles Styles, inline bool) string {
 
 	u = strings.TrimSpace(u)
 
-	programStyle := styles.Program
-	argumentStyle := styles.Argument
-	flagStyle := styles.Flag
-	if inline {
-		programStyle = programStyle.UnsetBackground()
-		argumentStyle = argumentStyle.UnsetBackground()
-		flagStyle = flagStyle.UnsetBackground()
-	}
-	useLine := []string{programStyle.Render(u)}
+	useLine := []string{styles.Program.Render(u)}
 	if hasCommands {
-		useLine = append(useLine, argumentStyle.Render("[command]"))
+		useLine = append(useLine, styles.Argument.Render("[command]"))
 	}
 	if hasArgs {
-		useLine = append(useLine, argumentStyle.Render("[args]"))
+		useLine = append(useLine, styles.Argument.Render("[args]"))
 	}
 	for _, arg := range otherArgs {
-		useLine = append(useLine, argumentStyle.Render(arg))
+		useLine = append(useLine, styles.Argument.Render(arg))
 	}
 	if hasFlags {
-		useLine = append(useLine, flagStyle.Render("[--flags]"))
+		useLine = append(useLine, styles.Flag.Render("[--flags]"))
 	}
 	return lipgloss.JoinHorizontal(lipgloss.Left, useLine...)
 }
@@ -122,40 +114,12 @@ func use(c *cobra.Command, styles Styles, inline bool) string {
 //
 //nolint:mnd
 func usage(c *cobra.Command, styles Styles) []string {
-	usage := []string{use(c, styles, false)}
+	usage := []string{use(c, styles)}
 
 	size := lipgloss.Width(usage[0])
 	examples := strings.Split(c.Example, "\n")
 	for i, line := range examples {
-		line = strings.TrimSpace(line)
-		if line == "" && i != len(examples)-1 {
-			usage = append(usage, " ")
-			continue
-		}
-
-		if strings.HasPrefix(line, "# ") {
-			s := lipgloss.JoinHorizontal(
-				lipgloss.Left,
-				styles.Comment.Render(line),
-			)
-			size = max(size, lipgloss.Width(s))
-			usage = append(usage, s)
-			continue
-		}
-
-		args := strings.Fields(line)
-		for i, arg := range args {
-			if i == 0 {
-				args[i] = styles.Program.Render(arg)
-				continue
-			}
-			args[i] = styles.Argument.Render(arg)
-		}
-
-		s := lipgloss.JoinHorizontal(
-			lipgloss.Left,
-			args...,
-		)
+		s := evalExample(c, line, i != len(examples)-1, styles)
 		size = max(size, lipgloss.Width(s))
 		usage = append(usage, s)
 	}
@@ -172,8 +136,74 @@ func usage(c *cobra.Command, styles Styles) []string {
 	return usage
 }
 
+func evalExample(c *cobra.Command, line string, last bool, styles Styles) string {
+	line = strings.TrimSpace(line)
+	if line == "" && !last {
+		return ""
+	}
+
+	if strings.HasPrefix(line, "# ") {
+		return lipgloss.JoinHorizontal(
+			lipgloss.Left,
+			styles.Comment.Render(line),
+		)
+	}
+
+	args := strings.Fields(line)
+	var nextIsFlag bool
+	for i, arg := range args {
+		if i == 0 {
+			args[i] = styles.Program.Render(arg)
+			continue
+		}
+		if nextIsFlag {
+			args[i] = styles.Flag.Render(arg)
+			nextIsFlag = false
+			continue
+		}
+		var dashes string
+		if strings.HasPrefix(arg, "-") {
+			dashes = "-"
+		}
+		if strings.HasPrefix(arg, "--") {
+			dashes = "--"
+		}
+		// handle a flag
+		if dashes != "" {
+			name, value, ok := strings.Cut(arg, "=")
+			name = strings.TrimPrefix(name, dashes)
+			// it is --flag=value
+			if ok {
+				args[i] = lipgloss.JoinHorizontal(
+					lipgloss.Left,
+					styles.Dash.Render(dashes),
+					styles.Flag.UnsetPadding().Render(name),
+					styles.Comment.UnsetPadding().Render("="),
+					styles.Flag.UnsetPadding().Render(value),
+				)
+				continue
+			}
+			// it is either --bool-flag or --flag value
+			args[i] = lipgloss.JoinHorizontal(
+				lipgloss.Left,
+				styles.Dash.Render(dashes),
+				styles.Flag.UnsetPadding().Render(name),
+			)
+			// if the flag is not a bool flag, next arg continues current flag
+			nextIsFlag = !isFlagBool(c, name)
+			continue
+		}
+		args[i] = styles.Argument.Render(arg)
+	}
+
+	return lipgloss.JoinHorizontal(
+		lipgloss.Left,
+		args...,
+	)
+}
+
 func evalFlags(c *cobra.Command, styles Styles) (map[string]string, []string) {
-	const shortPad = 2
+	const shortPad = 4
 	const noShortPad = shortPad + 3
 	flags := map[string]string{}
 	keys := []string{}
@@ -186,15 +216,15 @@ func evalFlags(c *cobra.Command, styles Styles) (map[string]string, []string) {
 			parts = append(
 				parts,
 				styles.Dash.PaddingLeft(noShortPad).Render("--"),
-				f.Name,
+				styles.Flag.UnsetPadding().Render(f.Name),
 			)
 		} else {
 			parts = append(
 				parts,
 				styles.Dash.PaddingLeft(shortPad).Render("-"),
-				f.Shorthand,
+				styles.Flag.UnsetPadding().Render(f.Shorthand),
 				styles.Dash.Render("--"),
-				f.Name,
+				styles.Flag.UnsetPadding().Render(f.Name),
 			)
 		}
 		key := lipgloss.JoinHorizontal(lipgloss.Left, parts...)
@@ -202,7 +232,8 @@ func evalFlags(c *cobra.Command, styles Styles) (map[string]string, []string) {
 		if f.DefValue != "" && f.DefValue != "false" && f.DefValue != "0" {
 			help = lipgloss.JoinHorizontal(
 				lipgloss.Left,
-				styles.Help.Render(f.Usage+" ("),
+				help,
+				styles.Help.PaddingLeft(1).Render("("),
 				styles.Default.Render(f.DefValue),
 				styles.Help.Render(")"),
 			)
@@ -221,7 +252,7 @@ func evalCmds(c *cobra.Command, styles Styles) (map[string]string, []string) {
 		if sc.Hidden {
 			continue
 		}
-		key := padStyle.Render(use(sc, styles, true))
+		key := padStyle.Render(use(sc, styles))
 		help := styles.Help.Render(sc.Short)
 		cmds[key] = help
 		keys = append(keys, key)
@@ -236,4 +267,15 @@ func calculateSpace(k1, k2 []string) int {
 		space = max(space, lipgloss.Width(k)+spaceBetween)
 	}
 	return space
+}
+
+func isFlagBool(c *cobra.Command, name string) bool {
+	cmd := c.Flags().Lookup(name)
+	if cmd == nil {
+		cmd = c.Flags().ShorthandLookup(name)
+	}
+	if cmd == nil {
+		return false
+	}
+	return cmd.Value.Type() == "bool"
 }

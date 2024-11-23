@@ -21,7 +21,10 @@ This is an example program we made for serpentine!`,
 example
 
 # Run it with some argument:
-example --foo=xyz
+example --name=Carlos -a -s Becker -a
+
+# Run a sub command with an argument:
+example sub --async --foo=xyz --async arguments
 		`,
 		Args: cobra.ArbitraryArgs,
 		Run:  func(*cobra.Command, []string) {},
@@ -35,6 +38,7 @@ example --foo=xyz
 	cmd.Flags().DurationVar(&d, "duration", 0, "Time since your last commit")
 	cmd.Flags().IntVar(&bar, "age", 0, "Your age")
 	cmd.Flags().Float64Var(&zaz, "idk", 0.0, "I don't know")
+	cmd.Flags().BoolP("async", "a", false, "Run async")
 
 	_ = cmd.Flags().MarkHidden("age")
 	_ = cmd.Flags().MarkHidden("duration")

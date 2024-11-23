@@ -22,8 +22,8 @@ var DefaultTheme = Theme{
 	Codeblock: lipgloss.Color("235"),
 	Title:     lipgloss.Color("141"),
 	Comment:   lipgloss.Color("8"),
+	Flag:      lipgloss.Color("250"),
 	Argument:  lipgloss.Color("248"),
-	Flag:      lipgloss.Color("244"),
 	Help:      lipgloss.Color("243"),
 	Dash:      lipgloss.Color("240"),
 	Default:   lipgloss.Color("146"),
@@ -64,6 +64,10 @@ func makeStyles(theme Theme) Styles {
 			Background(theme.Codeblock).
 			Foreground(theme.Flag).
 			PaddingLeft(1),
+		Dash: lipgloss.NewStyle().
+			Background(theme.Codeblock).
+			Foreground(theme.Dash).
+			PaddingLeft(1),
 		Span: lipgloss.NewStyle().
 			Background(theme.Codeblock),
 		Title: lipgloss.NewStyle().
@@ -71,12 +75,22 @@ func makeStyles(theme Theme) Styles {
 			Foreground(theme.Title).
 			Transform(strings.ToUpper).
 			Margin(1, 0, 0, 2),
-		Dash: lipgloss.NewStyle().
-			Foreground(theme.Dash).
-			MarginLeft(1),
 		Help: lipgloss.NewStyle().
 			Foreground(theme.Help),
 		Default: lipgloss.NewStyle().
 			Foreground(theme.Default),
+	}
+}
+
+func (s Styles) nobg() Styles {
+	return Styles{
+		Codeblock: s.Codeblock.UnsetBackground(),
+		Program:   s.Program.UnsetBackground(),
+		Comment:   s.Comment.UnsetBackground(),
+		Argument:  s.Argument.UnsetBackground(),
+		Flag:      s.Flag.UnsetBackground(),
+		Dash:      s.Dash.UnsetBackground(),
+		Span:      s.Span.UnsetBackground(),
+		Help:      s.Help,
 	}
 }
