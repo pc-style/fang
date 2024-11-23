@@ -2,7 +2,7 @@
 
 An experimental small library to make user friendly [cobra][] commands.
 
-<p><img src="https://github.com/user-attachments/assets/38c4e0ba-cebd-4455-bd14-edc664651123" width="766"></p>
+<p><img src="https://github.com/user-attachments/assets/f40ec67f-8437-412a-ae58-0c7810d3ee1a" width="800"></p>
 
 ## Features
 
@@ -22,3 +22,23 @@ An experimental small library to make user friendly [cobra][] commands.
     overkill for smaller programs.
     Mango also uses _roff_ directly instead of converting from markdown, so it
     should render better looking man pages.
+
+## Feedback
+
+We’d love to hear your thoughts on this project. Feel free to drop us a note!
+
+- [Twitter](https://twitter.com/charmcli)
+- [The Fediverse](https://mastodon.social/@charmcli)
+- [Discord](https://charm.sh/chat)
+
+## License
+
+[MIT](https://github.com/charmbracelet/gum/raw/main/LICENSE)
+
+---
+
+Part of [Charm](https://charm.sh).
+
+<a href="https://charm.sh/"><img alt="The Charm logo" src="https://stuff.charm.sh/charm-badge.jpg" width="400" /></a>
+
+Charm热爱开源 • Charm loves open source
