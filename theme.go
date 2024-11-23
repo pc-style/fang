@@ -16,7 +16,7 @@ type Theme struct {
 	Help         color.Color
 	Default      color.Color
 	Dash         color.Color
-	ErrorHeader  [2]color.Color
+	ErrorHeader  [2]color.Color // 0=fg 1=bg
 	ErrorDetails color.Color
 }
 
