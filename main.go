@@ -17,6 +17,7 @@ type settings struct {
 	manpages    bool
 	version     string
 	commit      string
+	theme       Theme
 }
 
 // Option changes serpentine settings.
@@ -33,6 +34,13 @@ func WithoutCompletions() Option {
 func WithoutManpage() Option {
 	return func(s *settings) {
 		s.manpages = false
+	}
+}
+
+// WithTheme sets the colorscheme.
+func WithTheme(theme Theme) Option {
+	return func(s *settings) {
+		s.theme = theme
 	}
 }
 
@@ -55,12 +63,16 @@ func Setup(root *cobra.Command, options ...Option) *cobra.Command {
 	opts := settings{
 		manpages:    true,
 		completions: true,
+		theme:       DefaultTheme,
 	}
 	for _, option := range options {
 		option(&opts)
 	}
 
-	root.SetHelpFunc(helpFn)
+	root.SetHelpFunc(func(c *cobra.Command, s []string) {
+		styles := makeStyles(opts.theme)
+		helpFn(c, styles)
+	})
 
 	if opts.manpages {
 		root.AddCommand(&cobra.Command{
@@ -73,9 +85,11 @@ func Setup(root *cobra.Command, options ...Option) *cobra.Command {
 			RunE: func(cmd *cobra.Command, _ []string) error {
 				page, err := mango.NewManPage(1, cmd.Root())
 				if err != nil {
+					//nolint:wrapcheck
 					return err
 				}
 				_, err = fmt.Fprint(os.Stdout, page.Build(roff.NewDocument()))
+				//nolint:wrapcheck
 				return err
 			},
 		})

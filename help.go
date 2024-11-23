@@ -14,50 +14,35 @@ import (
 
 const minSpace = 10
 
-// TODO: use ansi colors only
-var (
-	bg             = lipgloss.Color("235")
-	codeBlockStyle = lipgloss.NewStyle().Background(bg).MarginLeft(2).Padding(1, 3, 0, 1)
-	programStyle   = lipgloss.NewStyle().Background(bg).Foreground(lipgloss.Color("#7E65FF")).PaddingLeft(1)
-	commentStyle   = lipgloss.NewStyle().Background(bg).Foreground(lipgloss.BrightBlack).PaddingLeft(1)
-	argumentStyle  = lipgloss.NewStyle().Background(bg).Foreground(lipgloss.Color("248")).PaddingLeft(1)
-	flagStyle      = lipgloss.NewStyle().Background(bg).Foreground(lipgloss.Color("244")).PaddingLeft(1)
-	titleStyle     = lipgloss.NewStyle().Bold(true).Transform(strings.ToUpper).Margin(1, 0, 0, 2).Foreground(lipgloss.Color("#6C50FF"))
-	spanStyle      = lipgloss.NewStyle().Background(bg)
-
-	dashStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("240")).MarginLeft(1)
-	helpStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("243"))
-	keywordStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("1"))
-)
-
-func helpFn(c *cobra.Command, _ []string) {
+func helpFn(c *cobra.Command, styles Styles) {
+	const shortPad = 2
 	w := colorprofile.NewWriter(os.Stdout, os.Environ())
 	_, _ = fmt.Fprintln(w)
 	if c.Long == "" {
 		_, _ = fmt.Fprintln(w, "  "+c.Short)
 	} else {
-		_, _ = fmt.Fprintln(w, lipgloss.NewStyle().PaddingLeft(2).Render(c.Long))
+		_, _ = fmt.Fprintln(w, lipgloss.NewStyle().PaddingLeft(shortPad).Render(c.Long))
 	}
-	_, _ = fmt.Fprintln(w, titleStyle.Render("usage"))
+	_, _ = fmt.Fprintln(w, styles.Title.Render("usage"))
 	_, _ = fmt.Fprintln(w)
 
 	_, _ = fmt.Fprintln(
 		w,
-		codeBlockStyle.Render(
+		styles.Codeblock.Render(
 			lipgloss.JoinVertical(
 				lipgloss.Top,
-				usage(c)...,
+				usage(c, styles)...,
 			),
 		),
 	)
 
-	cmds, cmdKeys := evalCmds(c)
-	flags, flagKeys := evalFlags(c)
+	cmds, cmdKeys := evalCmds(c, styles)
+	flags, flagKeys := evalFlags(c, styles)
 	space := calculateSpace(cmdKeys, flagKeys)
 
 	if len(cmds) > 0 {
 		_, _ = fmt.Fprintln(w)
-		_, _ = fmt.Fprintln(w, titleStyle.Render("commands"))
+		_, _ = fmt.Fprintln(w, styles.Title.Render("commands"))
 		for _, k := range cmdKeys {
 			_, _ = fmt.Fprintln(w, lipgloss.JoinHorizontal(
 				lipgloss.Left,
@@ -70,7 +55,7 @@ func helpFn(c *cobra.Command, _ []string) {
 
 	if len(flags) > 0 {
 		_, _ = fmt.Fprintln(w)
-		_, _ = fmt.Fprintln(w, titleStyle.Render("flags"))
+		_, _ = fmt.Fprintln(w, styles.Title.Render("flags"))
 		for _, k := range flagKeys {
 			_, _ = fmt.Fprintln(w, lipgloss.JoinHorizontal(
 				lipgloss.Left,
@@ -85,7 +70,9 @@ func helpFn(c *cobra.Command, _ []string) {
 var otherArgsRe = regexp.MustCompile(`(\[.*\])`)
 
 // use stylized use line for a given command.
-func use(c *cobra.Command, inline bool) string {
+//
+//nolint:mnd
+func use(c *cobra.Command, styles Styles, inline bool) string {
 	u := c.Use
 	hasArgs := strings.Contains(u, "[args]")
 	hasFlags := strings.Contains(u, "[flags]") || strings.Contains(u, "[--flags]") || c.HasFlags() || c.HasPersistentFlags() || c.HasAvailableFlags()
@@ -106,9 +93,9 @@ func use(c *cobra.Command, inline bool) string {
 
 	u = strings.TrimSpace(u)
 
-	programStyle := programStyle
-	argumentStyle := argumentStyle
-	flagStyle := flagStyle
+	programStyle := styles.Program
+	argumentStyle := styles.Argument
+	flagStyle := styles.Flag
 	if inline {
 		programStyle = programStyle.UnsetBackground()
 		argumentStyle = argumentStyle.UnsetBackground()
@@ -132,8 +119,10 @@ func use(c *cobra.Command, inline bool) string {
 
 // usage for a given command.
 // will print both the cmd.Use and cmd.Example bits.
-func usage(c *cobra.Command) []string {
-	usage := []string{use(c, false)}
+//
+//nolint:mnd
+func usage(c *cobra.Command, styles Styles) []string {
+	usage := []string{use(c, styles, false)}
 
 	size := lipgloss.Width(usage[0])
 	examples := strings.Split(c.Example, "\n")
@@ -147,7 +136,7 @@ func usage(c *cobra.Command) []string {
 		if strings.HasPrefix(line, "# ") {
 			s := lipgloss.JoinHorizontal(
 				lipgloss.Left,
-				commentStyle.Render(line),
+				styles.Comment.Render(line),
 			)
 			size = max(size, lipgloss.Width(s))
 			usage = append(usage, s)
@@ -157,10 +146,10 @@ func usage(c *cobra.Command) []string {
 		args := strings.Fields(line)
 		for i, arg := range args {
 			if i == 0 {
-				args[i] = programStyle.Render(arg)
+				args[i] = styles.Program.Render(arg)
 				continue
 			}
-			args[i] = argumentStyle.Render(arg)
+			args[i] = styles.Argument.Render(arg)
 		}
 
 		s := lipgloss.JoinHorizontal(
@@ -176,14 +165,16 @@ func usage(c *cobra.Command) []string {
 			usage[i] = lipgloss.JoinHorizontal(
 				lipgloss.Left,
 				use,
-				spanStyle.Render(strings.Repeat(" ", size-usize)),
+				styles.Span.Render(strings.Repeat(" ", size-usize)),
 			)
 		}
 	}
 	return usage
 }
 
-func evalFlags(c *cobra.Command) (map[string]string, []string) {
+func evalFlags(c *cobra.Command, styles Styles) (map[string]string, []string) {
+	const shortPad = 2
+	const noShortPad = shortPad + 3
 	flags := map[string]string{}
 	keys := []string{}
 	c.Flags().VisitAll(func(f *pflag.Flag) {
@@ -194,26 +185,26 @@ func evalFlags(c *cobra.Command) (map[string]string, []string) {
 		if f.Shorthand == "" {
 			parts = append(
 				parts,
-				dashStyle.PaddingLeft(5).Render("--"),
+				styles.Dash.PaddingLeft(noShortPad).Render("--"),
 				f.Name,
 			)
 		} else {
 			parts = append(
 				parts,
-				dashStyle.PaddingLeft(2).Render("-"),
+				styles.Dash.PaddingLeft(shortPad).Render("-"),
 				f.Shorthand,
-				dashStyle.Render("--"),
+				styles.Dash.Render("--"),
 				f.Name,
 			)
 		}
 		key := lipgloss.JoinHorizontal(lipgloss.Left, parts...)
-		help := helpStyle.Render(f.Usage)
+		help := styles.Help.Render(f.Usage)
 		if f.DefValue != "" && f.DefValue != "false" && f.DefValue != "0" {
 			help = lipgloss.JoinHorizontal(
 				lipgloss.Left,
-				helpStyle.Render(f.Usage+" ("),
-				keywordStyle.Render(f.DefValue),
-				helpStyle.Render(")"),
+				styles.Help.Render(f.Usage+" ("),
+				styles.Default.Render(f.DefValue),
+				styles.Help.Render(")"),
 			)
 		}
 		flags[key] = help
@@ -222,16 +213,16 @@ func evalFlags(c *cobra.Command) (map[string]string, []string) {
 	return flags, keys
 }
 
-func evalCmds(c *cobra.Command) (map[string]string, []string) {
+func evalCmds(c *cobra.Command, styles Styles) (map[string]string, []string) {
+	padStyle := lipgloss.NewStyle().PaddingLeft(3) //nolint:mnd
 	keys := []string{}
-	pad := lipgloss.NewStyle().PaddingLeft(3)
 	cmds := map[string]string{}
 	for _, sc := range c.Commands() {
 		if sc.Hidden {
 			continue
 		}
-		key := pad.Render(use(sc, true))
-		help := helpStyle.Render(sc.Short)
+		key := padStyle.Render(use(sc, styles, true))
+		help := styles.Help.Render(sc.Short)
 		cmds[key] = help
 		keys = append(keys, key)
 	}
@@ -239,9 +230,10 @@ func evalCmds(c *cobra.Command) (map[string]string, []string) {
 }
 
 func calculateSpace(k1, k2 []string) int {
+	const spaceBetween = 2
 	space := minSpace
 	for _, k := range append(k1, k2...) {
-		space = max(space, lipgloss.Width(k)+2)
+		space = max(space, lipgloss.Width(k)+spaceBetween)
 	}
 	return space
 }
