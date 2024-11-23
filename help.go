@@ -20,7 +20,6 @@ var (
 	codeBlockStyle = lipgloss.NewStyle().Background(bg).MarginLeft(2).Padding(1, 3, 0, 1)
 	programStyle   = lipgloss.NewStyle().Background(bg).Foreground(lipgloss.Color("#7E65FF")).PaddingLeft(1)
 	commentStyle   = lipgloss.NewStyle().Background(bg).Foreground(lipgloss.BrightBlack).PaddingLeft(1)
-	stringStyle    = lipgloss.NewStyle().Background(bg).Foreground(lipgloss.Color("#02BF87")).PaddingLeft(1)
 	argumentStyle  = lipgloss.NewStyle().Background(bg).Foreground(lipgloss.Color("248")).PaddingLeft(1)
 	flagStyle      = lipgloss.NewStyle().Background(bg).Foreground(lipgloss.Color("244")).PaddingLeft(1)
 	titleStyle     = lipgloss.NewStyle().Bold(true).Transform(strings.ToUpper).Margin(1, 0, 0, 2).Foreground(lipgloss.Color("#6C50FF"))
@@ -31,18 +30,18 @@ var (
 	keywordStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("1"))
 )
 
-func helpFn(c *cobra.Command, args []string) {
+func helpFn(c *cobra.Command, _ []string) {
 	w := colorprofile.NewWriter(os.Stdout, os.Environ())
-	fmt.Fprintln(w)
+	_, _ = fmt.Fprintln(w)
 	if c.Long == "" {
-		fmt.Fprintln(w, "  "+c.Short)
+		_, _ = fmt.Fprintln(w, "  "+c.Short)
 	} else {
-		fmt.Fprintln(w, lipgloss.NewStyle().PaddingLeft(2).Render(c.Long))
+		_, _ = fmt.Fprintln(w, lipgloss.NewStyle().PaddingLeft(2).Render(c.Long))
 	}
-	fmt.Fprintln(w, titleStyle.Render("usage"))
-	fmt.Fprintln(w)
+	_, _ = fmt.Fprintln(w, titleStyle.Render("usage"))
+	_, _ = fmt.Fprintln(w)
 
-	fmt.Fprintln(
+	_, _ = fmt.Fprintln(
 		w,
 		codeBlockStyle.Render(
 			lipgloss.JoinVertical(
@@ -57,10 +56,10 @@ func helpFn(c *cobra.Command, args []string) {
 	space := calculateSpace(cmdKeys, flagKeys)
 
 	if len(cmds) > 0 {
-		fmt.Fprintln(w)
-		fmt.Fprintln(w, titleStyle.Render("commands"))
+		_, _ = fmt.Fprintln(w)
+		_, _ = fmt.Fprintln(w, titleStyle.Render("commands"))
 		for _, k := range cmdKeys {
-			fmt.Fprintln(w, lipgloss.JoinHorizontal(
+			_, _ = fmt.Fprintln(w, lipgloss.JoinHorizontal(
 				lipgloss.Left,
 				k,
 				strings.Repeat(" ", space-lipgloss.Width(k)),
@@ -70,10 +69,10 @@ func helpFn(c *cobra.Command, args []string) {
 	}
 
 	if len(flags) > 0 {
-		fmt.Fprintln(w)
-		fmt.Fprintln(w, titleStyle.Render("flags"))
+		_, _ = fmt.Fprintln(w)
+		_, _ = fmt.Fprintln(w, titleStyle.Render("flags"))
 		for _, k := range flagKeys {
-			fmt.Fprintln(w, lipgloss.JoinHorizontal(
+			_, _ = fmt.Fprintln(w, lipgloss.JoinHorizontal(
 				lipgloss.Left,
 				k,
 				strings.Repeat(" ", space-lipgloss.Width(k)),

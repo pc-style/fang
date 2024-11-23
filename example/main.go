@@ -24,7 +24,7 @@ example
 example --foo=xyz
 		`,
 		Args: cobra.ArbitraryArgs,
-		Run:  func(cmd *cobra.Command, args []string) {},
+		Run:  func(*cobra.Command, []string) {},
 	}
 	var foo string
 	var bar int
@@ -36,9 +36,9 @@ example --foo=xyz
 	cmd.Flags().IntVar(&bar, "age", 0, "Your age")
 	cmd.Flags().Float64Var(&zaz, "idk", 0.0, "I don't know")
 
-	cmd.Flags().MarkHidden("age")
-	cmd.Flags().MarkHidden("duration")
-	cmd.Flags().MarkHidden("idk")
+	_ = cmd.Flags().MarkHidden("age")
+	_ = cmd.Flags().MarkHidden("duration")
+	_ = cmd.Flags().MarkHidden("idk")
 
 	serpentine.Setup(cmd)
 

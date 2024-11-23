@@ -19,24 +19,39 @@ type settings struct {
 	commit      string
 }
 
-type Opt func(*settings)
+// Option changes serpentine settings.
+type Option func(*settings)
 
-func WithoutCompletions(s *settings) {
-	s.completions = false
+// WithoutCompletions disables completions.
+func WithoutCompletions() Option {
+	return func(s *settings) {
+		s.completions = false
+	}
 }
 
-func WithoutManPage(s *settings) {
-	s.manpages = false
+// WithoutManpage disables man pages.
+func WithoutManpage() Option {
+	return func(s *settings) {
+		s.manpages = false
+	}
 }
 
-func WithVersion(version, commit string) Opt {
+// WithVersion sets the version.
+func WithVersion(version string) Option {
 	return func(s *settings) {
 		s.version = version
+	}
+}
+
+// WithCommit sets the commit SHA.
+func WithCommit(commit string) Option {
+	return func(s *settings) {
 		s.commit = commit
 	}
 }
 
-func Setup(cmd *cobra.Command, options ...Opt) *cobra.Command {
+// Setup setups the given root *cobra.Command.
+func Setup(root *cobra.Command, options ...Option) *cobra.Command {
 	opts := settings{
 		manpages:    true,
 		completions: true,
@@ -45,17 +60,17 @@ func Setup(cmd *cobra.Command, options ...Opt) *cobra.Command {
 		option(&opts)
 	}
 
-	cmd.SetHelpFunc(helpFn)
+	root.SetHelpFunc(helpFn)
 
 	if opts.manpages {
-		cmd.AddCommand(&cobra.Command{
+		root.AddCommand(&cobra.Command{
 			Use:                   "man",
 			Short:                 "Generates manpages",
 			SilenceUsage:          true,
 			DisableFlagsInUseLine: true,
 			Hidden:                true,
 			Args:                  cobra.NoArgs,
-			RunE: func(cmd *cobra.Command, args []string) error {
+			RunE: func(cmd *cobra.Command, _ []string) error {
 				page, err := mango.NewManPage(1, cmd.Root())
 				if err != nil {
 					return err
@@ -67,7 +82,7 @@ func Setup(cmd *cobra.Command, options ...Opt) *cobra.Command {
 	}
 
 	if opts.completions {
-		cmd.InitDefaultCompletionCmd()
+		root.InitDefaultCompletionCmd()
 	}
 
 	if opts.version == "" {
@@ -82,9 +97,9 @@ func Setup(cmd *cobra.Command, options ...Opt) *cobra.Command {
 		opts.version += " (" + opts.commit[:shaLen] + ")"
 	}
 
-	cmd.Version = opts.version
+	root.Version = opts.version
 
-	return cmd
+	return root
 }
 
 func getKey(info *debug.BuildInfo, key string) string {
