@@ -2,7 +2,6 @@ package serpentine
 
 import (
 	"fmt"
-	"os"
 	"regexp"
 	"strings"
 
@@ -16,9 +15,8 @@ import (
 
 const minSpace = 10
 
-func helpFn(c *cobra.Command, styles Styles) {
+func helpFn(c *cobra.Command, w *colorprofile.Writer, styles Styles) {
 	const shortPad = 2
-	w := colorprofile.NewWriter(os.Stdout, os.Environ())
 	_, _ = fmt.Fprintln(w)
 	if c.Long == "" {
 		_, _ = fmt.Fprintln(w, "  "+c.Short)

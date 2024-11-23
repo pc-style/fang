@@ -8,14 +8,16 @@ import (
 )
 
 type Theme struct {
-	Codeblock color.Color
-	Title     color.Color
-	Comment   color.Color
-	Argument  color.Color
-	Flag      color.Color
-	Help      color.Color
-	Default   color.Color
-	Dash      color.Color
+	Codeblock    color.Color
+	Title        color.Color
+	Comment      color.Color
+	Argument     color.Color
+	Flag         color.Color
+	Help         color.Color
+	Default      color.Color
+	Dash         color.Color
+	ErrorHeader  [2]color.Color
+	ErrorDetails color.Color
 }
 
 var DefaultTheme = Theme{
@@ -27,19 +29,26 @@ var DefaultTheme = Theme{
 	Help:      lipgloss.Color("243"),
 	Dash:      lipgloss.Color("240"),
 	Default:   lipgloss.Color("146"),
+	ErrorHeader: [2]color.Color{
+		lipgloss.Color("231"),
+		lipgloss.Color("203"),
+	},
+	ErrorDetails: lipgloss.Color("167"),
 }
 
 type Styles struct {
-	Codeblock lipgloss.Style
-	Program   lipgloss.Style
-	Comment   lipgloss.Style
-	Argument  lipgloss.Style
-	Flag      lipgloss.Style
-	Title     lipgloss.Style
-	Span      lipgloss.Style
-	Dash      lipgloss.Style
-	Help      lipgloss.Style
-	Default   lipgloss.Style
+	Codeblock    lipgloss.Style
+	Program      lipgloss.Style
+	Comment      lipgloss.Style
+	Argument     lipgloss.Style
+	Flag         lipgloss.Style
+	Title        lipgloss.Style
+	Span         lipgloss.Style
+	Dash         lipgloss.Style
+	Help         lipgloss.Style
+	Default      lipgloss.Style
+	ErrorHeader  lipgloss.Style
+	ErrorDetails lipgloss.Style
 }
 
 func makeStyles(theme Theme) Styles {
@@ -79,6 +88,17 @@ func makeStyles(theme Theme) Styles {
 			Foreground(theme.Help),
 		Default: lipgloss.NewStyle().
 			Foreground(theme.Default),
+		ErrorHeader: lipgloss.NewStyle().
+			Foreground(theme.ErrorHeader[0]).
+			Background(theme.ErrorHeader[1]).
+			Bold(true).
+			Padding(0, 1).
+			Margin(1).
+			MarginLeft(2).
+			SetString("ERROR"),
+		ErrorDetails: lipgloss.NewStyle().
+			Foreground(theme.ErrorDetails).
+			MarginLeft(2),
 	}
 }
 

@@ -11,6 +11,8 @@ An experimental small library to make user friendly [cobra][] commands.
 - Man pages: adds a hidden `man` command to generate _manpages_ using
   [mango][][^1]
 - Completions: adds a `completion` command that generate shell completions
+- Silence usage (don't show the help after an user error)
+- Beautiful error handling
 
 [info]: https://pkg.go.dev/runtime/debug#BuildInfo
 [cobra]: https://github.com/spf13/cobra

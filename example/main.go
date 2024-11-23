@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"time"
 
@@ -51,7 +50,6 @@ example sub --async --foo=xyz --async arguments
 		Short: "An example sub command",
 	})
 	if err := cmd.Execute(); err != nil {
-		fmt.Println(err)
 		os.Exit(1)
 	}
 }

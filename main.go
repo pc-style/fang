@@ -5,6 +5,8 @@ import (
 	"os"
 	"runtime/debug"
 
+	"github.com/charmbracelet/colorprofile"
+	"github.com/charmbracelet/lipgloss/v2"
 	mango "github.com/muesli/mango-cobra"
 	"github.com/muesli/roff"
 	"github.com/spf13/cobra"
@@ -69,9 +71,27 @@ func Setup(root *cobra.Command, options ...Option) *cobra.Command {
 		option(&opts)
 	}
 
+	styles := makeStyles(opts.theme)
+
 	root.SetHelpFunc(func(c *cobra.Command, s []string) {
-		styles := makeStyles(opts.theme)
-		helpFn(c, styles)
+		w := colorprofile.NewWriter(os.Stdout, os.Environ())
+		helpFn(c, w, styles)
+	})
+	root.SilenceUsage = true
+	root.SilenceErrors = true
+	root.SetFlagErrorFunc(func(c *cobra.Command, err error) error {
+		w := colorprofile.NewWriter(os.Stdout, os.Environ())
+		_, _ = fmt.Fprintln(w, styles.ErrorHeader.String())
+		_, _ = fmt.Fprintln(w, styles.ErrorDetails.Render(titleFirstWord(err.Error()+".")))
+		_, _ = fmt.Fprintln(w)
+		_, _ = fmt.Fprintln(w, lipgloss.JoinHorizontal(
+			lipgloss.Left,
+			styles.ErrorDetails.Render("Try"),
+			styles.Dash.UnsetBackground().Render("--"),
+			styles.Flag.UnsetBackground().UnsetPadding().Render("help"),
+			styles.ErrorDetails.UnsetMargins().PaddingLeft(1).Render("help for usage details."),
+		))
+		return err
 	})
 
 	if opts.manpages {
