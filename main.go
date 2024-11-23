@@ -73,13 +73,13 @@ func Setup(root *cobra.Command, options ...Option) *cobra.Command {
 
 	styles := makeStyles(opts.theme)
 
-	root.SetHelpFunc(func(c *cobra.Command, s []string) {
+	root.SetHelpFunc(func(c *cobra.Command, _ []string) {
 		w := colorprofile.NewWriter(os.Stdout, os.Environ())
 		helpFn(c, w, styles)
 	})
 	root.SilenceUsage = true
 	root.SilenceErrors = true
-	root.SetFlagErrorFunc(func(c *cobra.Command, err error) error {
+	root.SetFlagErrorFunc(func(_ *cobra.Command, err error) error {
 		w := colorprofile.NewWriter(os.Stdout, os.Environ())
 		_, _ = fmt.Fprintln(w, styles.ErrorHeader.String())
 		_, _ = fmt.Fprintln(w, styles.ErrorDetails.Render(titleFirstWord(err.Error()+".")))

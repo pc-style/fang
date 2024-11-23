@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/lipgloss/v2"
 )
 
+// Theme describes a colorscheme.
 type Theme struct {
 	Codeblock    color.Color
 	Title        color.Color
@@ -20,6 +21,7 @@ type Theme struct {
 	ErrorDetails color.Color
 }
 
+// DefaultTheme is the default colorscheme.
 var DefaultTheme = Theme{
 	Codeblock: lipgloss.Color("235"),
 	Title:     lipgloss.Color("141"),
@@ -36,6 +38,7 @@ var DefaultTheme = Theme{
 	ErrorDetails: lipgloss.Color("167"),
 }
 
+// Styles represents all the styles used.
 type Styles struct {
 	Codeblock    lipgloss.Style
 	Program      lipgloss.Style
@@ -52,6 +55,7 @@ type Styles struct {
 }
 
 func makeStyles(theme Theme) Styles {
+	//nolint:mnd
 	return Styles{
 		Codeblock: lipgloss.NewStyle().
 			Background(theme.Codeblock).

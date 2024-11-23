@@ -67,8 +67,6 @@ func helpFn(c *cobra.Command, w *colorprofile.Writer, styles Styles) {
 var otherArgsRe = regexp.MustCompile(`(\[.*\])`)
 
 // use stylized use line for a given command.
-//
-//nolint:mnd
 func use(c *cobra.Command, styles Styles) string {
 	u := c.Use
 	hasArgs := strings.Contains(u, "[args]")
@@ -82,7 +80,7 @@ func use(c *cobra.Command, styles Styles) string {
 		u = strings.ReplaceAll(u, k, "")
 	}
 
-	var otherArgs []string
+	var otherArgs []string //nolint:prealloc
 	for _, arg := range otherArgsRe.FindAllString(u, -1) {
 		u = strings.ReplaceAll(u, arg, "")
 		otherArgs = append(otherArgs, arg)
@@ -108,8 +106,6 @@ func use(c *cobra.Command, styles Styles) string {
 
 // usage for a given command.
 // will print both the cmd.Use and cmd.Example bits.
-//
-//nolint:mnd
 func usage(c *cobra.Command, styles Styles) []string {
 	usage := []string{use(c, styles)}
 
