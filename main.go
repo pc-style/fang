@@ -89,8 +89,9 @@ func Setup(root *cobra.Command, options ...Option) *cobra.Command {
 			styles.ErrorDetails.Render("Try"),
 			styles.Dash.UnsetBackground().Render("--"),
 			styles.Flag.UnsetBackground().UnsetPadding().Render("help"),
-			styles.ErrorDetails.UnsetMargins().PaddingLeft(1).Render("help for usage details."),
+			styles.ErrorDetails.UnsetMargins().PaddingLeft(1).Render("for usage details."),
 		))
+		_, _ = fmt.Fprintln(w)
 		return err
 	})
 
