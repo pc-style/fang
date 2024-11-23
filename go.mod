@@ -4,7 +4,7 @@ go 1.23
 
 require (
 	github.com/charmbracelet/colorprofile v0.1.9
-	github.com/charmbracelet/lipgloss/v2 v2.0.0-alpha.2
+	github.com/charmbracelet/lipgloss/v2 v2.0.0-alpha.2.0.20241122170046-8f4aab7ecfa3
 	github.com/muesli/mango-cobra v1.2.0
 	github.com/muesli/roff v0.1.0
 	github.com/spf13/cobra v1.8.1
@@ -13,7 +13,7 @@ require (
 )
 
 require (
-	github.com/charmbracelet/x/ansi v0.5.0 // indirect
+	github.com/charmbracelet/x/ansi v0.5.1 // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
