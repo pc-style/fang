@@ -10,6 +10,8 @@ import (
 	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 const minSpace = 10
@@ -228,7 +230,7 @@ func evalFlags(c *cobra.Command, styles Styles) (map[string]string, []string) {
 			)
 		}
 		key := lipgloss.JoinHorizontal(lipgloss.Left, parts...)
-		help := styles.Help.Render(f.Usage)
+		help := styles.Help.Render(titleFirstWord(f.Usage))
 		if f.DefValue != "" && f.DefValue != "false" && f.DefValue != "0" {
 			help = lipgloss.JoinHorizontal(
 				lipgloss.Left,
@@ -253,7 +255,7 @@ func evalCmds(c *cobra.Command, styles Styles) (map[string]string, []string) {
 			continue
 		}
 		key := padStyle.Render(use(sc, styles))
-		help := styles.Help.Render(sc.Short)
+		help := styles.Help.Render(titleFirstWord(sc.Short))
 		cmds[key] = help
 		keys = append(keys, key)
 	}
@@ -278,4 +280,13 @@ func isFlagBool(c *cobra.Command, name string) bool {
 		return false
 	}
 	return cmd.Value.Type() == "bool"
+}
+
+func titleFirstWord(s string) string {
+	words := strings.Fields(s)
+	if len(words) == 0 {
+		return s
+	}
+	words[0] = cases.Title(language.AmericanEnglish).String(words[0])
+	return strings.Join(words, " ")
 }
