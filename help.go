@@ -1,6 +1,7 @@
 package serpentine
 
 import (
+	"cmp"
 	"fmt"
 	"regexp"
 	"strings"
@@ -18,11 +19,7 @@ const minSpace = 10
 func helpFn(c *cobra.Command, w *colorprofile.Writer, styles Styles) {
 	const shortPad = 2
 	_, _ = fmt.Fprintln(w)
-	if c.Long == "" {
-		_, _ = fmt.Fprintln(w, "  "+c.Short)
-	} else {
-		_, _ = fmt.Fprintln(w, styles.Help.PaddingLeft(shortPad).Render(c.Long))
-	}
+	_, _ = fmt.Fprintln(w, styles.Help.PaddingLeft(shortPad).Render(cmp.Or(c.Long, c.Short)))
 	_, _ = fmt.Fprintln(w, styles.Title.Render("usage"))
 	_, _ = fmt.Fprintln(w)
 
@@ -229,7 +226,7 @@ func evalFlags(c *cobra.Command, styles Styles) (map[string]string, []string) {
 		}
 		key := lipgloss.JoinHorizontal(lipgloss.Left, parts...)
 		help := styles.Help.Render(titleFirstWord(f.Usage))
-		if f.DefValue != "" && f.DefValue != "false" && f.DefValue != "0" {
+		if f.DefValue != "" && f.DefValue != "false" && f.DefValue != "0" && f.DefValue != "[]" {
 			help = lipgloss.JoinHorizontal(
 				lipgloss.Left,
 				help,
