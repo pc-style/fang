@@ -25,6 +25,34 @@ An experimental small library to make user friendly [cobra][] commands.
     Mango also uses _roff_ directly instead of converting from markdown, so it
     should render better looking man pages.
 
+## Usage
+
+To use it, invoke `serpentine.Setup` passing your root `*cobra.Command` as
+argument, and then `Execute()` it:
+
+```go
+package main
+
+import (
+	"os"
+
+	"github.com/charmbracelet/serpentine"
+	"github.com/spf13/cobra"
+)
+
+func main() {
+	cmd := &cobra.Command{
+		Use:   "example",
+		Short: "A simple example program!",
+	}
+	if err := serpentine.Setup(cmd).Execute(); err != nil {
+		os.Exit(1)
+	}
+}
+```
+
+That's all there is to it!
+
 ## Feedback
 
 We’d love to hear your thoughts on this project. Feel free to drop us a note!
