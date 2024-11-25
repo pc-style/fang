@@ -25,8 +25,8 @@ example --name=Carlos -a -s Becker -a
 # Run a sub command with an argument:
 example sub --async --foo=xyz --async arguments
 		`,
-		Args: cobra.ArbitraryArgs,
-		Run:  func(*cobra.Command, []string) {},
+		// Args: cobra.ArbitraryArgs,
+		Run: func(*cobra.Command, []string) {},
 	}
 	var foo string
 	var bar int
@@ -43,13 +43,15 @@ example sub --async --foo=xyz --async arguments
 	_ = cmd.Flags().MarkHidden("duration")
 	_ = cmd.Flags().MarkHidden("idk")
 
-	serpentine.Setup(cmd)
-
 	cmd.AddCommand(&cobra.Command{
 		Use:   "sub [command] [flags] [args]",
 		Short: "An example sub command",
 	})
-	if err := cmd.Execute(); err != nil {
+	if err := serpentine.Setup(
+		cmd,
+		serpentine.WithoutManpage(),
+		serpentine.WithoutCompletions(),
+	).Execute(); err != nil {
 		os.Exit(1)
 	}
 }

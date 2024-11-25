@@ -6,7 +6,6 @@ import (
 	"runtime/debug"
 
 	"github.com/charmbracelet/colorprofile"
-	"github.com/charmbracelet/lipgloss/v2"
 	mango "github.com/muesli/mango-cobra"
 	"github.com/muesli/roff"
 	"github.com/spf13/cobra"
@@ -60,8 +59,26 @@ func WithCommit(commit string) Option {
 	}
 }
 
+type Command interface {
+	Execute() error
+}
+
+type cobraCmd struct {
+	*cobra.Command
+	styles Styles
+}
+
+func (c *cobraCmd) Execute() error {
+	if err := c.Command.Execute(); err != nil {
+		w := colorprofile.NewWriter(c.ErrOrStderr(), os.Environ())
+		writeError(w, c.styles, err)
+		return err
+	}
+	return nil
+}
+
 // Setup setups the given root *cobra.Command.
-func Setup(root *cobra.Command, options ...Option) *cobra.Command {
+func Setup(root *cobra.Command, options ...Option) Command {
 	opts := settings{
 		manpages:    true,
 		completions: true,
@@ -74,26 +91,11 @@ func Setup(root *cobra.Command, options ...Option) *cobra.Command {
 	styles := makeStyles(opts.theme)
 
 	root.SetHelpFunc(func(c *cobra.Command, _ []string) {
-		w := colorprofile.NewWriter(os.Stdout, os.Environ())
+		w := colorprofile.NewWriter(c.OutOrStdout(), os.Environ())
 		helpFn(c, w, styles)
 	})
 	root.SilenceUsage = true
 	root.SilenceErrors = true
-	root.SetFlagErrorFunc(func(_ *cobra.Command, err error) error {
-		w := colorprofile.NewWriter(os.Stdout, os.Environ())
-		_, _ = fmt.Fprintln(w, styles.ErrorHeader.String())
-		_, _ = fmt.Fprintln(w, styles.ErrorDetails.Render(titleFirstWord(err.Error()+".")))
-		_, _ = fmt.Fprintln(w)
-		_, _ = fmt.Fprintln(w, lipgloss.JoinHorizontal(
-			lipgloss.Left,
-			styles.ErrorDetails.Render("Try"),
-			styles.Dash.UnsetBackground().Render("--"),
-			styles.Flag.UnsetBackground().UnsetPadding().Render("help"),
-			styles.ErrorDetails.UnsetMargins().PaddingLeft(1).Render("for usage details."),
-		))
-		_, _ = fmt.Fprintln(w)
-		return err
-	})
 
 	if opts.manpages {
 		root.AddCommand(&cobra.Command{
@@ -118,6 +120,8 @@ func Setup(root *cobra.Command, options ...Option) *cobra.Command {
 
 	if opts.completions {
 		root.InitDefaultCompletionCmd()
+	} else {
+		root.CompletionOptions.DisableDefaultCmd = true
 	}
 
 	if opts.version == "" {
@@ -134,7 +138,10 @@ func Setup(root *cobra.Command, options ...Option) *cobra.Command {
 
 	root.Version = opts.version
 
-	return root
+	return &cobraCmd{
+		Command: root,
+		styles:  styles,
+	}
 }
 
 func getKey(info *debug.BuildInfo, key string) string {

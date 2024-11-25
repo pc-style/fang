@@ -14,15 +14,13 @@ import (
 	"golang.org/x/text/language"
 )
 
-const minSpace = 10
+const (
+	minSpace = 10
+	shortPad = 2
+)
 
 func helpFn(c *cobra.Command, w *colorprofile.Writer, styles Styles) {
-	const shortPad = 2
-	_, _ = fmt.Fprintln(w)
-	_, _ = fmt.Fprintln(w, styles.Help.PaddingLeft(shortPad).Render(cmp.Or(c.Long, c.Short)))
-	_, _ = fmt.Fprintln(w, styles.Title.Render("usage"))
-	_, _ = fmt.Fprintln(w)
-
+	writeLongShort(w, styles, cmp.Or(c.Long, c.Short))
 	_, _ = fmt.Fprintln(
 		w,
 		styles.Codeblock.Render(
@@ -62,6 +60,30 @@ func helpFn(c *cobra.Command, w *colorprofile.Writer, styles Styles) {
 			))
 		}
 	}
+}
+
+func writeError(w *colorprofile.Writer, styles Styles, err error) {
+	_, _ = fmt.Fprintln(w, styles.ErrorHeader.String())
+	_, _ = fmt.Fprintln(w, styles.ErrorDetails.Render(titleFirstWord(err.Error()+".")))
+	_, _ = fmt.Fprintln(w)
+	_, _ = fmt.Fprintln(w, lipgloss.JoinHorizontal(
+		lipgloss.Left,
+		styles.ErrorDetails.Render("Try"),
+		styles.Dash.UnsetBackground().Render("--"),
+		styles.Flag.UnsetBackground().UnsetPadding().Render("help"),
+		styles.ErrorDetails.UnsetMargins().PaddingLeft(1).Render("for usage details."),
+	))
+	_, _ = fmt.Fprintln(w)
+}
+
+func writeLongShort(w *colorprofile.Writer, styles Styles, longShort string) {
+	if longShort == "" {
+		return
+	}
+	_, _ = fmt.Fprintln(w)
+	_, _ = fmt.Fprintln(w, styles.Help.PaddingLeft(shortPad).Render(longShort))
+	_, _ = fmt.Fprintln(w, styles.Title.Render("usage"))
+	_, _ = fmt.Fprintln(w)
 }
 
 var otherArgsRe = regexp.MustCompile(`(\[.*\])`)
@@ -263,14 +285,14 @@ func calculateSpace(k1, k2 []string) int {
 }
 
 func isFlagBool(c *cobra.Command, name string) bool {
-	cmd := c.Flags().Lookup(name)
-	if cmd == nil {
-		cmd = c.Flags().ShorthandLookup(name)
+	flag := c.Flags().Lookup(name)
+	if flag == nil && len(name) == 1 {
+		flag = c.Flags().ShorthandLookup(name)
 	}
-	if cmd == nil {
+	if flag == nil {
 		return false
 	}
-	return cmd.Value.Type() == "bool"
+	return flag.Value.Type() == "bool"
 }
 
 func titleFirstWord(s string) string {
