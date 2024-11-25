@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 	"time"
 
@@ -47,11 +48,12 @@ example sub --async --foo=xyz --async arguments
 		Use:   "sub [command] [flags] [args]",
 		Short: "An example sub command",
 	})
-	if err := serpentine.Setup(
+	if err := serpentine.Execute(
+		context.Background(),
 		cmd,
 		serpentine.WithoutManpage(),
 		serpentine.WithoutCompletions(),
-	).Execute(); err != nil {
+	); err != nil {
 		os.Exit(1)
 	}
 }

@@ -1,6 +1,7 @@
 package serpentine
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"runtime/debug"
@@ -59,26 +60,8 @@ func WithCommit(commit string) Option {
 	}
 }
 
-type Command interface {
-	Execute() error
-}
-
-type cobraCmd struct {
-	*cobra.Command
-	styles Styles
-}
-
-func (c *cobraCmd) Execute() error {
-	if err := c.Command.Execute(); err != nil {
-		w := colorprofile.NewWriter(c.ErrOrStderr(), os.Environ())
-		writeError(w, c.styles, err)
-		return err
-	}
-	return nil
-}
-
-// Setup setups the given root *cobra.Command.
-func Setup(root *cobra.Command, options ...Option) Command {
+// Execute applies serpentine to the command and executes it!
+func Execute(ctx context.Context, root *cobra.Command, options ...Option) error {
 	opts := settings{
 		manpages:    true,
 		completions: true,
@@ -138,10 +121,12 @@ func Setup(root *cobra.Command, options ...Option) Command {
 
 	root.Version = opts.version
 
-	return &cobraCmd{
-		Command: root,
-		styles:  styles,
+	if err := root.ExecuteContext(ctx); err != nil {
+		w := colorprofile.NewWriter(root.ErrOrStderr(), os.Environ())
+		writeError(w, styles, err)
+		return err
 	}
+	return nil
 }
 
 func getKey(info *debug.BuildInfo, key string) string {

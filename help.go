@@ -90,6 +90,7 @@ var otherArgsRe = regexp.MustCompile(`(\[.*\])`)
 
 // use stylized use line for a given command.
 func use(c *cobra.Command, styles Styles) string {
+	// XXX: maybe use c.UseLine() here?
 	u := c.Use
 	hasArgs := strings.Contains(u, "[args]")
 	hasFlags := strings.Contains(u, "[flags]") || strings.Contains(u, "[--flags]") || c.HasFlags() || c.HasPersistentFlags() || c.HasAvailableFlags()

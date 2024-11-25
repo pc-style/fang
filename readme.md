@@ -45,7 +45,7 @@ func main() {
 		Use:   "example",
 		Short: "A simple example program!",
 	}
-	if err := serpentine.Setup(cmd).Execute(); err != nil {
+	if err := serpentine.Execute(context.TODO(), cmd); err != nil {
 		os.Exit(1)
 	}
 }
