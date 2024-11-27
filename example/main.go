@@ -10,8 +10,7 @@ import (
 )
 
 func main() {
-	var cmd *cobra.Command
-	cmd = &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "example [args]",
 		Short: "An example program!",
 		Long: `A pretty silly example program!
@@ -27,9 +26,9 @@ example --name=Carlos -a -s Becker -a
 # Run a subcommand with an argument:
 example sub --async --foo=xyz --async arguments
 		`,
-		// Args: cobra.ArbitraryArgs,
-		Run: func(*cobra.Command, []string) {
-			_ = cmd.Help()
+
+		Run: func(c *cobra.Command, _ []string) {
+			c.Println("Ran the root command!")
 		},
 	}
 	var foo string
@@ -50,6 +49,9 @@ example sub --async --foo=xyz --async arguments
 	cmd.AddCommand(&cobra.Command{
 		Use:   "sub [command] [flags] [args]",
 		Short: "An example subcommand",
+		Run: func(c *cobra.Command, _ []string) {
+			c.Println("Ran the sub command!")
+		},
 	})
 
 	// This is where the magic happens.
