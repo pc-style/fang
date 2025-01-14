@@ -60,6 +60,8 @@ func helpFn(c *cobra.Command, w *colorprofile.Writer, styles Styles) {
 			))
 		}
 	}
+
+	_, _ = fmt.Fprintln(w)
 }
 
 func writeError(w *colorprofile.Writer, styles Styles, err error) {
