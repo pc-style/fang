@@ -29,3 +29,4 @@
        --string2          A string flag
     -s --string3          A string flag
     -v --version          Version for simple
+
