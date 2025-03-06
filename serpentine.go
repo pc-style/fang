@@ -124,7 +124,7 @@ func Execute(ctx context.Context, root *cobra.Command, options ...Option) error 
 	if err := root.ExecuteContext(ctx); err != nil {
 		w := colorprofile.NewWriter(root.ErrOrStderr(), os.Environ())
 		writeError(w, styles, err)
-		return err
+		return err //nolint:wrapcheck
 	}
 	return nil
 }
