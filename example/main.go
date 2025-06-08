@@ -1,3 +1,4 @@
+// Package main is a fang example.
 package main
 
 import (
@@ -6,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/charmbracelet/serpentine"
+	"github.com/charmbracelet/fang"
 	"github.com/spf13/cobra"
 )
 
@@ -20,9 +21,9 @@ func main() {
 	cmd := &cobra.Command{
 		Use:   "example [args]",
 		Short: "An example program!",
-		Long: `A pretty silly example program!
+		Long: `A little example program!
 
-It doesn’t really do anything, but that’s the point.`,
+It doesn’t really do anything, but that’s the point.™`,
 		Example: `
 # Run it:
 example
@@ -32,13 +33,16 @@ example --name=Carlos -a -s Becker -a
 
 # Run a subcommand with an argument:
 example sub --async --foo=xyz --async arguments
+
+# Run with a quoted string:
+example sub2 "quoted string"
 		`,
 
 		RunE: func(c *cobra.Command, _ []string) error {
 			if eerr {
 				return errors.New("we have an error")
 			}
-			c.Println("Ran the root command!")
+			c.Println("You ran the root command. Now try --help.")
 			return nil
 		},
 	}
@@ -64,11 +68,11 @@ example sub --async --foo=xyz --async arguments
 	})
 
 	// This is where the magic happens.
-	if err := serpentine.Execute(
+	if err := fang.Execute(
 		context.Background(),
 		cmd,
-		serpentine.WithoutManpage(),
-		serpentine.WithoutCompletions(),
+		fang.WithoutManpage(),
+		fang.WithoutCompletions(),
 	); err != nil {
 		os.Exit(1)
 	}

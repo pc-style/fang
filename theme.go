@@ -1,70 +1,92 @@
-package serpentine
+package fang
 
 import (
 	"image/color"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss/v2"
+	"github.com/charmbracelet/x/exp/charmtone"
 )
 
 // Theme describes a colorscheme.
 type Theme struct {
 	Codeblock    color.Color
+	Program      color.Color
 	Title        color.Color
 	Comment      color.Color
+	Command      color.Color
+	QuotedString color.Color
 	Argument     color.Color
 	Flag         color.Color
 	Help         color.Color
 	Default      color.Color
 	Dash         color.Color
 	ErrorHeader  [2]color.Color // 0=fg 1=bg
-	ErrorDetails color.Color
+	ErrorDetails [2]color.Color // 0=fg 1=flag
 }
 
 // DefaultTheme is the default colorscheme.
-var DefaultTheme = Theme{
-	Codeblock: lipgloss.Color("235"),
-	Title:     lipgloss.Color("141"),
-	Comment:   lipgloss.Color("8"),
-	Flag:      lipgloss.Color("250"),
-	Argument:  lipgloss.Color("248"),
-	Help:      lipgloss.Color("243"),
-	Dash:      lipgloss.Color("240"),
-	Default:   lipgloss.Color("146"),
-	ErrorHeader: [2]color.Color{
-		lipgloss.Color("231"),
-		lipgloss.Color("203"),
-	},
-	ErrorDetails: lipgloss.Color("167"),
+func DefaultTheme(isDark bool) Theme {
+	c := lipgloss.LightDark(isDark)
+	return Theme{
+		Codeblock:    c(charmtone.Salt, lipgloss.Color("#2F2E36")),
+		Title:        charmtone.Charple,
+		Comment:      c(charmtone.Squid, lipgloss.Color("#747282")),
+		Flag:         c(charmtone.Charcoal, charmtone.Ash),
+		Argument:     c(charmtone.Charcoal, charmtone.Ash),
+		Help:         c(charmtone.Charcoal, charmtone.Ash),
+		Dash:         c(charmtone.Charcoal, charmtone.Smoke),
+		Default:      c(charmtone.Squid, lipgloss.Color("#747282")),
+		Program:      c(charmtone.Dolly, charmtone.Blush),
+		Command:      c(charmtone.Charcoal, charmtone.Ash),
+		QuotedString: c(lipgloss.Color("#00BC82"), charmtone.Julep),
+		ErrorHeader: [2]color.Color{
+			charmtone.Butter,
+			charmtone.Cherry,
+		},
+		ErrorDetails: [2]color.Color{
+			c(charmtone.Charcoal, charmtone.Ash),
+			c(lipgloss.Color("#00BC82"), charmtone.Julep),
+		},
+	}
 }
 
 // Styles represents all the styles used.
 type Styles struct {
-	Codeblock    lipgloss.Style
-	Program      lipgloss.Style
-	Comment      lipgloss.Style
-	Argument     lipgloss.Style
-	Flag         lipgloss.Style
-	Title        lipgloss.Style
-	Span         lipgloss.Style
-	Dash         lipgloss.Style
-	Help         lipgloss.Style
-	Default      lipgloss.Style
-	ErrorHeader  lipgloss.Style
-	ErrorDetails lipgloss.Style
+	Codeblock        lipgloss.Style
+	Program          lipgloss.Style
+	Command          lipgloss.Style
+	Comment          lipgloss.Style
+	Argument         lipgloss.Style
+	QuotedString     lipgloss.Style
+	Flag             lipgloss.Style
+	Title            lipgloss.Style
+	Span             lipgloss.Style
+	Dash             lipgloss.Style
+	Help             lipgloss.Style
+	Default          lipgloss.Style
+	ErrorHeader      lipgloss.Style
+	ErrorDetails     lipgloss.Style
+	ErrorDetailsFlag lipgloss.Style
 }
 
 func makeStyles(theme Theme) Styles {
 	//nolint:mnd
 	return Styles{
+		QuotedString: lipgloss.NewStyle().
+			PaddingLeft(1).
+			Background(theme.Codeblock).
+			Foreground(theme.QuotedString),
 		Codeblock: lipgloss.NewStyle().
 			Background(theme.Codeblock).
 			MarginLeft(2).
 			Padding(1, 3, 0, 1),
 		Program: lipgloss.NewStyle().
 			Background(theme.Codeblock).
-			Foreground(theme.Title).
+			Foreground(theme.Program).
 			PaddingLeft(1),
+		Command: lipgloss.NewStyle().
+			Foreground(theme.Command),
 		Comment: lipgloss.NewStyle().
 			Background(theme.Codeblock).
 			Foreground(theme.Comment).
@@ -101,8 +123,11 @@ func makeStyles(theme Theme) Styles {
 			MarginLeft(2).
 			SetString("ERROR"),
 		ErrorDetails: lipgloss.NewStyle().
-			Foreground(theme.ErrorDetails).
+			Foreground(theme.ErrorDetails[0]).
 			MarginLeft(2),
+		ErrorDetailsFlag: lipgloss.NewStyle().
+			Foreground(theme.ErrorDetails[1]).
+			PaddingLeft(1),
 	}
 }
 

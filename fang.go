@@ -1,4 +1,5 @@
-package serpentine
+// Package fang provides styling for cobra commands.
+package fang
 
 import (
 	"context"
@@ -7,6 +8,7 @@ import (
 	"runtime/debug"
 
 	"github.com/charmbracelet/colorprofile"
+	"github.com/charmbracelet/lipgloss/v2"
 	mango "github.com/muesli/mango-cobra"
 	"github.com/muesli/roff"
 	"github.com/spf13/cobra"
@@ -19,10 +21,10 @@ type settings struct {
 	manpages    bool
 	version     string
 	commit      string
-	theme       Theme
+	theme       *Theme
 }
 
-// Option changes serpentine settings.
+// Option changes fang settings.
 type Option func(*settings)
 
 // WithoutCompletions disables completions.
@@ -42,7 +44,7 @@ func WithoutManpage() Option {
 // WithTheme sets the colorscheme.
 func WithTheme(theme Theme) Option {
 	return func(s *settings) {
-		s.theme = theme
+		s.theme = &theme
 	}
 }
 
@@ -60,18 +62,23 @@ func WithCommit(commit string) Option {
 	}
 }
 
-// Execute applies serpentine to the command and executes it!
+// Execute applies fang to the command and executes it.
 func Execute(ctx context.Context, root *cobra.Command, options ...Option) error {
 	opts := settings{
 		manpages:    true,
 		completions: true,
-		theme:       DefaultTheme,
 	}
 	for _, option := range options {
 		option(&opts)
 	}
 
-	styles := makeStyles(opts.theme)
+	if opts.theme == nil {
+		isDark := lipgloss.HasDarkBackground(os.Stdin, os.Stderr)
+		t := DefaultTheme(isDark)
+		opts.theme = &t
+	}
+
+	styles := makeStyles(*opts.theme)
 
 	root.SetHelpFunc(func(c *cobra.Command, _ []string) {
 		w := colorprofile.NewWriter(c.OutOrStdout(), os.Environ())
