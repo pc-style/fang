@@ -9,7 +9,7 @@
     <a href="https://github.com/charmbracelet/fang/actions"><img src="https://github.com/charmbracelet/fang/workflows/build/badge.svg" alt="Build Status"></a>
 </p>
 
-The command line app starter kit. A small, experimental library for batteries-included [Cobra][cobra] applications.
+The CLI starter kit. A small, experimental library for batteries-included [Cobra][cobra] applications.
 
 <p>
 	<img width="819" alt="fang" src="https://github.com/user-attachments/assets/b58a1b10-21bc-4899-a7bf-73ff765a5132" />
