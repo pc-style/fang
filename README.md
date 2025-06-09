@@ -11,10 +11,8 @@
 
 The command line app starter kit. A small, experimental library for batteries-included [Cobra][cobra] applications.
 
-<img src="./example/1.svg" width="100%" alt="Example 1">
-
 <p>
-  <img src="./example/2.svg" width="50%" alt="Example 2"><img src="./example/3.svg" width="50%" alt="Example 3">
+	<img width="819" alt="fang" src="https://github.com/user-attachments/assets/b58a1b10-21bc-4899-a7bf-73ff765a5132" />
 </p>
 
 ## Features
