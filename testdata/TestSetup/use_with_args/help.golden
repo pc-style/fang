@@ -5,11 +5,6 @@
 
     simple [command] [args] [something-else] [--flags]
                                              
-  EXAMPLES                                   
-                                             
-                                             
-                                             
-                                             
   COMMANDS                                   
                                              
     completion [command]  Generate the autocompletion script for the specified shell

@@ -1,10 +1,5 @@
     simple [command] [--flags]
                                              
-  EXAMPLES                                   
-                                             
-                                             
-                                             
-                                             
   COMMANDS                                   
                                              
     completion [command]  Generate the autocompletion script for the specified shell

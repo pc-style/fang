@@ -175,6 +175,9 @@ func use(c *cobra.Command, styles Styles) string {
 // usage for a given command.
 // will print both the cmd.Use and cmd.Example bits.
 func usage(c *cobra.Command, styles Styles, minSize int) []string {
+	if c.Example == "" {
+		return nil
+	}
 	usage := []string{}
 	size := minSize
 	examples := strings.Split(c.Example, "\n")
@@ -193,6 +196,7 @@ func usage(c *cobra.Command, styles Styles, minSize int) []string {
 			)
 		}
 	}
+
 	return usage
 }
 
