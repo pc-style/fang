@@ -1,9 +1,7 @@
 # Fang
 
-
-
 <p>
-    <img width="486" alt="Charm Fang" src="https://github.com/user-attachments/assets/4538f94f-3043-42df-ab63-eae4f696b60c">   
+    <img width="485" alt="Charm Fang" src="https://github.com/user-attachments/assets/3f34ea01-3750-4760-beb2-a1b700e110f5">   
 </p>
 <p>
     <a href="https://github.com/charmbracelet/fang/releases"><img src="https://img.shields.io/github/release/charmbracelet/fang.svg" alt="Latest Release"></a>
