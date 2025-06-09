@@ -80,6 +80,8 @@ func makeStyles(theme Theme) Styles {
 		Codeblock: lipgloss.NewStyle().
 			Background(theme.Codeblock).
 			MarginLeft(2).
+			MarginRight(2).
+			Width(width()-4).
 			Padding(1, 3, 0, 1),
 		Program: lipgloss.NewStyle().
 			Background(theme.Codeblock).
@@ -109,6 +111,7 @@ func makeStyles(theme Theme) Styles {
 			Bold(true).
 			Foreground(theme.Title).
 			Transform(strings.ToUpper).
+			Width(width()-2).
 			Margin(1, 0, 0, 2),
 		Help: lipgloss.NewStyle().
 			Foreground(theme.Help),
