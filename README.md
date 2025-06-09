@@ -9,7 +9,7 @@
     <a href="https://github.com/charmbracelet/fang/actions"><img src="https://github.com/charmbracelet/fang/workflows/build/badge.svg" alt="Build Status"></a>
 </p>
 
-The command line starter kit. A small, experimental library for batteries-included [Cobra][cobra] applications.
+The command line app starter kit. A small, experimental library for batteries-included [Cobra][cobra] applications.
 
 <img src="./example/1.svg" width="100%" alt="Example 1">
 
@@ -24,9 +24,9 @@ The command line starter kit. A small, experimental library for batteries-includ
 - **Automatic `--version`**: set it to the [build info][info], or a version of your choice
 - **Manpages**: Adds a hidden `man` command to generate _manpages_ using
   [mango][][^1]
-- **Completionss**: Adds a `completion` command to generate shell completions
-- **Quality-of-Life**: Silent `usage` output (help is not shown after a user error)
+- **Completions**: Adds a `completion` command to generate shell completions
 - **Themeable**: use the built-in theme, or make your own
+- **UX**: Silent `usage` output (help is not shown after a user error)
 
 [info]: https://pkg.go.dev/runtime/debug#BuildInfo
 [cobra]: https://github.com/spf13/cobra
