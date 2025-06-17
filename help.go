@@ -14,8 +14,6 @@ import (
 	"github.com/charmbracelet/x/term"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 const (
@@ -93,7 +91,7 @@ func helpFn(c *cobra.Command, w *colorprofile.Writer, styles Styles) {
 
 func writeError(w *colorprofile.Writer, styles Styles, err error) {
 	_, _ = fmt.Fprintln(w, styles.ErrorHeader.String())
-	_, _ = fmt.Fprintln(w, styles.ErrorText.Width(width()).Render(titleFirstWord(err.Error()+".")))
+	_, _ = fmt.Fprintln(w, styles.ErrorText.Width(width()).Render(err.Error()+"."))
 	_, _ = fmt.Fprintln(w)
 	_, _ = fmt.Fprintln(w, lipgloss.JoinHorizontal(
 		lipgloss.Left,
@@ -296,7 +294,7 @@ func evalFlags(c *cobra.Command, styles Styles) (map[string]string, []string) {
 			)
 		}
 		key := lipgloss.JoinHorizontal(lipgloss.Left, parts...)
-		help := styles.Text.Render(titleFirstWord(f.Usage))
+		help := styles.Description.Render(f.Usage)
 		if f.DefValue != "" && f.DefValue != "false" && f.DefValue != "0" && f.DefValue != "[]" {
 			help = lipgloss.JoinHorizontal(
 				lipgloss.Left,
@@ -319,7 +317,7 @@ func evalCmds(c *cobra.Command, styles Styles) (map[string]string, []string) {
 			continue
 		}
 		key := padStyle.Render(styleUsage(sc, styles.Program, false))
-		help := styles.Text.Render(titleFirstWord(sc.Short))
+		help := styles.Description.Render(sc.Short)
 		cmds[key] = help
 		keys = append(keys, key)
 	}
@@ -344,13 +342,4 @@ func isFlagBool(c *cobra.Command, name string) bool {
 		return false
 	}
 	return flag.Value.Type() == "bool"
-}
-
-func titleFirstWord(s string) string {
-	words := strings.Fields(s)
-	if len(words) == 0 {
-		return s
-	}
-	words[0] = cases.Title(language.AmericanEnglish).String(words[0])
-	return strings.Join(words, " ")
 }

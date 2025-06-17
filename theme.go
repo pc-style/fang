@@ -6,12 +6,15 @@ import (
 
 	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/charmbracelet/x/exp/charmtone"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // ColorScheme describes a colorscheme.
 type ColorScheme struct {
 	Base           color.Color
 	Title          color.Color
+	Description    color.Color
 	Codeblock      color.Color
 	Program        color.Color
 	DimmedArgument color.Color
@@ -32,6 +35,7 @@ func DefaultTheme(isDark bool) ColorScheme {
 	return ColorScheme{
 		Base:           c(charmtone.Charcoal, charmtone.Ash),
 		Title:          charmtone.Charple,
+		Description:    charmtone.Ash,
 		Codeblock:      c(charmtone.Salt, lipgloss.Color("#2F2E36")),
 		Program:        charmtone.Malibu,
 		DimmedArgument: charmtone.Squid,
@@ -55,6 +59,7 @@ type Styles struct {
 	Default     lipgloss.Style
 	ErrorHeader lipgloss.Style
 	ErrorText   lipgloss.Style
+	Description lipgloss.Style
 	Codeblock   Codeblock
 	Program     Program
 }
@@ -88,6 +93,9 @@ func makeStyles(cs ColorScheme) Styles {
 			Padding(1, 0).
 			Margin(0, 2).
 			Width(width()),
+		Description: lipgloss.NewStyle().
+			Foreground(cs.Description).
+			Transform(titleFirstWord),
 		Codeblock: Codeblock{
 			Base: lipgloss.NewStyle().
 				Background(cs.Codeblock).
@@ -145,7 +153,8 @@ func makeStyles(cs ColorScheme) Styles {
 		Span: lipgloss.NewStyle().
 			Background(cs.Codeblock),
 		ErrorText: lipgloss.NewStyle().
-			MarginLeft(2),
+			MarginLeft(2).
+			Transform(titleFirstWord),
 		ErrorHeader: lipgloss.NewStyle().
 			Foreground(cs.ErrorHeader[0]).
 			Background(cs.ErrorHeader[1]).
@@ -155,4 +164,13 @@ func makeStyles(cs ColorScheme) Styles {
 			MarginLeft(2).
 			SetString("ERROR"),
 	}
+}
+
+func titleFirstWord(s string) string {
+	words := strings.Fields(s)
+	if len(words) == 0 {
+		return s
+	}
+	words[0] = cases.Title(language.AmericanEnglish).String(words[0])
+	return strings.Join(words, " ")
 }
