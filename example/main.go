@@ -35,7 +35,10 @@ example --name=Carlos -a -s Becker -a
 example sub --async --foo=xyz --async arguments
 
 # Run with a quoted string:
-example sub2 "quoted string"
+example sub "quoted string"
+
+# Mix and match:
+example sub "multi-word quoted string" --flag "another quoted string"
 		`,
 
 		RunE: func(c *cobra.Command, _ []string) error {
@@ -64,6 +67,14 @@ example sub2 "quoted string"
 		Short: "An example subcommand",
 		Run: func(c *cobra.Command, _ []string) {
 			c.Println("Ran the sub command!")
+		},
+	})
+
+	cmd.AddCommand(&cobra.Command{
+		Use:   "throw",
+		Short: "A command that throws an error",
+		RunE: func(*cobra.Command, []string) error {
+			return errors.New("a super long error string that is meant to test the error handling in fang. It should be long enough to wrap around and test the error styling and formatting capabilities of fang. This is a test to see how well fang handles long error messages and whether it can display them properly without breaking the layout or causing any issues")
 		},
 	})
 
