@@ -35,7 +35,7 @@ func DefaultTheme(isDark bool) ColorScheme {
 	return ColorScheme{
 		Base:           c(charmtone.Charcoal, charmtone.Ash),
 		Title:          charmtone.Charple,
-		Description:    charmtone.Ash,
+		Description:    c(charmtone.Ash, charmtone.Squid),
 		Codeblock:      c(charmtone.Salt, lipgloss.Color("#2F2E36")),
 		Program:        charmtone.Malibu,
 		DimmedArgument: charmtone.Squid,
