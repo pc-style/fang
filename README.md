@@ -12,7 +12,7 @@
 The CLI starter kit. A small, experimental library for batteries-included [Cobra][cobra] applications.
 
 <p>
-	<img width="823" alt="fang-02" src="https://github.com/user-attachments/assets/a584b6f8-3e74-4f2a-b0f6-fbba3f9cbabd" />
+    <img width="865" alt="fang-02" src="https://github.com/user-attachments/assets/7f68ec3f-2b42-4188-a750-7e2808696132" />
 </p>
 
 ## Features
