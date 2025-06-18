@@ -11,6 +11,7 @@ import (
 
 	"github.com/charmbracelet/colorprofile"
 	"github.com/charmbracelet/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/term"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -38,44 +39,33 @@ func helpFn(c *cobra.Command, w *colorprofile.Writer, styles Styles) {
 	usage := styleUsage(c, styles.Codeblock.Program, true)
 	examples := styleExamples(c, styles)
 
-	maxw := lipgloss.Width(usage)
+	padding := styles.Codeblock.Base.GetHorizontalPadding()
+	blockWidth := lipgloss.Width(usage)
 	for _, ex := range examples {
-		maxw = max(maxw, lipgloss.Width(ex))
+		blockWidth = max(blockWidth, lipgloss.Width(ex))
 	}
-	maxw = min(width(), maxw)
+	blockWidth = min(width()-padding, blockWidth+padding)
 
-	leftPadding := 4
-	if width() >= 80 {
-		styles.Codeblock.Base = styles.Codeblock.Base.Width(maxw + styles.Codeblock.Base.GetHorizontalPadding())
-	} else {
-		// adjust some styles if width < 80
-		const margin = 2
-		leftPadding = margin
-		maxw -= margin
-		styles.Codeblock.Base = styles.Codeblock.Base.
-			UnsetPadding().
-			UnsetMargins().
-			MarginLeft(margin).
-			Width(maxw)
-	}
+	styles.Codeblock.Base = styles.Codeblock.Base.Width(blockWidth)
 
 	_, _ = fmt.Fprintln(w, styles.Title.Render("usage"))
 	_, _ = fmt.Fprintln(w, styles.Codeblock.Base.Render(usage))
 	if len(examples) > 0 {
-		_, _ = fmt.Fprintln(w, styles.Title.Render("examples"))
 		cw := styles.Codeblock.Base.GetWidth() - styles.Codeblock.Base.GetHorizontalPadding()
-		for i, ex := range examples {
-			if j := cw - lipgloss.Width(ex); j > 0 {
-				examples[i] += styles.Codeblock.Text.Width(j).Render("")
+		_, _ = fmt.Fprintln(w, styles.Title.Render("examples"))
+		for i, example := range examples {
+			if lipgloss.Width(example) > cw {
+				examples[i] = ansi.Truncate(example, cw, "…")
 			}
 		}
-		_, _ = fmt.Fprintln(w, styles.Codeblock.Base.Render(lipgloss.JoinVertical(lipgloss.Top, examples...)))
+		_, _ = fmt.Fprintln(w, styles.Codeblock.Base.Render(strings.Join(examples, "\n")))
 	}
 
 	cmds, cmdKeys := evalCmds(c, styles)
 	flags, flagKeys := evalFlags(c, styles)
 	space := calculateSpace(cmdKeys, flagKeys)
 
+	leftPadding := 4
 	if len(cmds) > 0 {
 		_, _ = fmt.Fprintln(w, styles.Title.Render("commands"))
 		for _, k := range cmdKeys {
