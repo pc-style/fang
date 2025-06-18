@@ -93,8 +93,7 @@ func makeStyles(cs ColorScheme) Styles {
 			Foreground(cs.Title).
 			Transform(strings.ToUpper).
 			Padding(1, 0).
-			Margin(0, 2).
-			Width(width()),
+			Margin(0, 2),
 		FlagDescription: lipgloss.NewStyle().
 			Foreground(cs.Description).
 			Transform(titleFirstWord),
@@ -105,7 +104,7 @@ func makeStyles(cs ColorScheme) Styles {
 			Base: lipgloss.NewStyle().
 				Background(cs.Codeblock).
 				Foreground(cs.Base).
-				Margin(0, 2).
+				MarginLeft(2).
 				Padding(1, 2),
 			Text: lipgloss.NewStyle().
 				Background(cs.Codeblock),
@@ -125,9 +124,9 @@ func makeStyles(cs ColorScheme) Styles {
 					Background(cs.Codeblock).
 					Foreground(cs.Argument),
 				DimmedArgument: lipgloss.NewStyle().
+					PaddingLeft(1).
 					Background(cs.Codeblock).
-					Foreground(cs.DimmedArgument).
-					PaddingLeft(1),
+					Foreground(cs.DimmedArgument),
 				Command: lipgloss.NewStyle().
 					PaddingLeft(1).
 					Background(cs.Codeblock).
@@ -142,14 +141,14 @@ func makeStyles(cs ColorScheme) Styles {
 			Name: lipgloss.NewStyle().
 				Foreground(cs.Program),
 			Argument: lipgloss.NewStyle().
-				Foreground(cs.Argument).
-				PaddingLeft(1),
+				PaddingLeft(1).
+				Foreground(cs.Argument),
 			DimmedArgument: lipgloss.NewStyle().
-				Foreground(cs.DimmedArgument).
-				PaddingLeft(1),
+				PaddingLeft(1).
+				Foreground(cs.DimmedArgument),
 			Flag: lipgloss.NewStyle().
-				Foreground(cs.Flag).
-				PaddingLeft(1),
+				PaddingLeft(1).
+				Foreground(cs.Flag),
 			Command: lipgloss.NewStyle().
 				Foreground(cs.Command),
 			QuotedString: lipgloss.NewStyle().
@@ -160,6 +159,7 @@ func makeStyles(cs ColorScheme) Styles {
 			Background(cs.Codeblock),
 		ErrorText: lipgloss.NewStyle().
 			MarginLeft(2).
+			Width(width() - 4).
 			Transform(titleFirstWord),
 		ErrorHeader: lipgloss.NewStyle().
 			Foreground(cs.ErrorHeader[0]).

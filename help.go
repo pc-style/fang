@@ -38,23 +38,37 @@ func helpFn(c *cobra.Command, w *colorprofile.Writer, styles Styles) {
 	usage := styleUsage(c, styles.Codeblock.Program, true)
 	examples := styleExamples(c, styles)
 
-	uw := lipgloss.Width(usage)
+	maxw := lipgloss.Width(usage)
 	for _, ex := range examples {
-		uw = max(uw, lipgloss.Width(ex))
+		maxw = max(maxw, lipgloss.Width(ex))
 	}
-	uw = min(width(), uw)
+	maxw = min(width(), maxw)
 
-	// adjust width
-	usage = paddingRight(usage, uw, styles.Codeblock.Text)
-	for i, ex := range examples {
-		examples[i] = paddingRight(ex, uw, styles.Codeblock.Text)
+	leftPadding := 4
+	if width() >= 80 {
+		styles.Codeblock.Base = styles.Codeblock.Base.Width(maxw + styles.Codeblock.Base.GetHorizontalPadding())
+	} else {
+		// adjust some styles if width < 80
+		const margin = 2
+		leftPadding = margin
+		maxw -= margin
+		styles.Codeblock.Base = styles.Codeblock.Base.
+			UnsetPadding().
+			UnsetMargins().
+			MarginLeft(margin).
+			Width(maxw)
 	}
-	styles.Codeblock.Base = styles.Codeblock.Base.Width(uw + styles.Codeblock.Base.GetHorizontalFrameSize())
 
 	_, _ = fmt.Fprintln(w, styles.Title.Render("usage"))
 	_, _ = fmt.Fprintln(w, styles.Codeblock.Base.Render(usage))
 	if len(examples) > 0 {
 		_, _ = fmt.Fprintln(w, styles.Title.Render("examples"))
+		cw := styles.Codeblock.Base.GetWidth() - styles.Codeblock.Base.GetHorizontalPadding()
+		for i, ex := range examples {
+			if j := cw - lipgloss.Width(ex); j > 0 {
+				examples[i] += styles.Codeblock.Text.Width(j).Render("")
+			}
+		}
 		_, _ = fmt.Fprintln(w, styles.Codeblock.Base.Render(lipgloss.JoinVertical(lipgloss.Top, examples...)))
 	}
 
@@ -67,7 +81,7 @@ func helpFn(c *cobra.Command, w *colorprofile.Writer, styles Styles) {
 		for _, k := range cmdKeys {
 			_, _ = fmt.Fprintln(w, lipgloss.JoinHorizontal(
 				lipgloss.Left,
-				lipgloss.NewStyle().PaddingLeft(4).Render(k),
+				lipgloss.NewStyle().PaddingLeft(leftPadding).Render(k),
 				strings.Repeat(" ", space-lipgloss.Width(k)),
 				cmds[k],
 			))
@@ -79,7 +93,7 @@ func helpFn(c *cobra.Command, w *colorprofile.Writer, styles Styles) {
 		for _, k := range flagKeys {
 			_, _ = fmt.Fprintln(w, lipgloss.JoinHorizontal(
 				lipgloss.Left,
-				lipgloss.NewStyle().PaddingLeft(4).Render(k),
+				lipgloss.NewStyle().PaddingLeft(leftPadding).Render(k),
 				strings.Repeat(" ", space-lipgloss.Width(k)),
 				flags[k],
 			))
@@ -91,13 +105,13 @@ func helpFn(c *cobra.Command, w *colorprofile.Writer, styles Styles) {
 
 func writeError(w *colorprofile.Writer, styles Styles, err error) {
 	_, _ = fmt.Fprintln(w, styles.ErrorHeader.String())
-	_, _ = fmt.Fprintln(w, styles.ErrorText.Width(width()).Render(err.Error()+"."))
+	_, _ = fmt.Fprintln(w, styles.ErrorText.Render(err.Error()+"."))
 	_, _ = fmt.Fprintln(w)
 	_, _ = fmt.Fprintln(w, lipgloss.JoinHorizontal(
 		lipgloss.Left,
-		styles.ErrorText.Render("Try"),
+		styles.ErrorText.UnsetWidth().Render("Try"),
 		styles.Program.Flag.Render("--help"),
-		styles.ErrorText.UnsetMargins().UnsetTransform().PaddingLeft(1).Render("for usage."),
+		styles.ErrorText.UnsetWidth().UnsetMargins().UnsetTransform().PaddingLeft(1).Render("for usage."),
 	))
 	_, _ = fmt.Fprintln(w)
 }
@@ -186,15 +200,6 @@ func styleExamples(c *cobra.Command, styles Styles) []string {
 	}
 
 	return usage
-}
-
-func paddingRight(s string, targetSize int, st lipgloss.Style) string {
-	size := lipgloss.Width(s)
-	if size >= targetSize {
-		return s
-	}
-	return st.Width(targetSize).Render(s)
-	// return s + st.Render(strings.Repeat(" ", targetSize-size))
 }
 
 func styleExample(c *cobra.Command, line string, styles Codeblock) string {
