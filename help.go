@@ -200,6 +200,7 @@ func styleExample(c *cobra.Command, line string, styles Codeblock) string {
 		)
 	}
 
+	// TODO: implement a proper parser.
 	args := strings.Fields(line)
 	var nextIsFlag bool
 	var isQuotedString bool
