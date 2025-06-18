@@ -20,6 +20,7 @@ type ColorScheme struct {
 	DimmedArgument color.Color
 	Comment        color.Color
 	Flag           color.Color
+	FlagDefault    color.Color
 	Command        color.Color
 	QuotedString   color.Color
 	Argument       color.Color
@@ -41,6 +42,7 @@ func DefaultTheme(isDark bool) ColorScheme {
 		DimmedArgument: charmtone.Squid,
 		Comment:        c(charmtone.Squid, lipgloss.Color("#747282")),
 		Flag:           c(lipgloss.Color("#00BC82"), charmtone.Julep),
+		FlagDefault:    charmtone.Ash,
 		Argument:       c(charmtone.Charcoal, charmtone.Ash),
 		Command:        c(charmtone.Pony, charmtone.Dolly),
 		QuotedString:   c(charmtone.Coral, charmtone.Salmon),
@@ -53,15 +55,15 @@ func DefaultTheme(isDark bool) ColorScheme {
 
 // Styles represents all the styles used.
 type Styles struct {
-	Text        lipgloss.Style
-	Title       lipgloss.Style
-	Span        lipgloss.Style
-	Default     lipgloss.Style
-	ErrorHeader lipgloss.Style
-	ErrorText   lipgloss.Style
-	Description lipgloss.Style
-	Codeblock   Codeblock
-	Program     Program
+	Text            lipgloss.Style
+	Title           lipgloss.Style
+	Span            lipgloss.Style
+	ErrorHeader     lipgloss.Style
+	ErrorText       lipgloss.Style
+	FlagDescription lipgloss.Style
+	FlagDefault     lipgloss.Style
+	Codeblock       Codeblock
+	Program         Program
 }
 
 // Codeblock styles.
@@ -93,9 +95,12 @@ func makeStyles(cs ColorScheme) Styles {
 			Padding(1, 0).
 			Margin(0, 2).
 			Width(width()),
-		Description: lipgloss.NewStyle().
+		FlagDescription: lipgloss.NewStyle().
 			Foreground(cs.Description).
 			Transform(titleFirstWord),
+		FlagDefault: lipgloss.NewStyle().
+			Foreground(cs.FlagDefault).
+			PaddingLeft(1),
 		Codeblock: Codeblock{
 			Base: lipgloss.NewStyle().
 				Background(cs.Codeblock).
@@ -121,7 +126,8 @@ func makeStyles(cs ColorScheme) Styles {
 					Foreground(cs.Argument),
 				DimmedArgument: lipgloss.NewStyle().
 					Background(cs.Codeblock).
-					Foreground(cs.DimmedArgument),
+					Foreground(cs.DimmedArgument).
+					PaddingLeft(1),
 				Command: lipgloss.NewStyle().
 					PaddingLeft(1).
 					Background(cs.Codeblock).

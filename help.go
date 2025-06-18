@@ -294,12 +294,12 @@ func evalFlags(c *cobra.Command, styles Styles) (map[string]string, []string) {
 			)
 		}
 		key := lipgloss.JoinHorizontal(lipgloss.Left, parts...)
-		help := styles.Description.Render(f.Usage)
+		help := styles.FlagDescription.Render(f.Usage)
 		if f.DefValue != "" && f.DefValue != "false" && f.DefValue != "0" && f.DefValue != "[]" {
 			help = lipgloss.JoinHorizontal(
 				lipgloss.Left,
 				help,
-				styles.Default.PaddingLeft(1).Render("("+f.DefValue+")"),
+				styles.FlagDefault.Render("("+f.DefValue+")"),
 			)
 		}
 		flags[key] = help
@@ -317,7 +317,7 @@ func evalCmds(c *cobra.Command, styles Styles) (map[string]string, []string) {
 			continue
 		}
 		key := padStyle.Render(styleUsage(sc, styles.Program, false))
-		help := styles.Description.Render(sc.Short)
+		help := styles.FlagDescription.Render(sc.Short)
 		cmds[key] = help
 		keys = append(keys, key)
 	}
