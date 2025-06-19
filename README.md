@@ -12,7 +12,7 @@
 The CLI starter kit. A small, experimental library for batteries-included [Cobra][cobra] applications.
 
 <p>
-    <img width="865" alt="fang-02" src="https://github.com/user-attachments/assets/7f68ec3f-2b42-4188-a750-7e2808696132" />
+    <img width="859" alt="The Charm Fang mascot and title treatment" src="https://github.com/user-attachments/assets/5c35e1fa-9577-4f81-a879-3ddb4d4a43f0" />
 </p>
 
 ## Features
