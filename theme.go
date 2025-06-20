@@ -47,7 +47,7 @@ func DefaultTheme(isDark bool) ColorScheme {
 		Argument:       c(charmtone.Charcoal, charmtone.Ash),
 		Description:    c(charmtone.Charcoal, charmtone.Ash), // flag and command descriptions
 		FlagDefault:    c(charmtone.Smoke, charmtone.Squid),  // flag default values in descriptions
-		QuotedString:   c(charmtone.Charcoal, charmtone.Ash),
+		QuotedString:   c(charmtone.Coral, charmtone.Salmon),
 		ErrorHeader: [2]color.Color{
 			charmtone.Butter,
 			charmtone.Cherry,

@@ -202,34 +202,57 @@ func styleExample(c *cobra.Command, line string, styles Codeblock) string {
 		)
 	}
 
-	// TODO: implement a proper parser.
-	args := strings.Fields(line)
-	var nextIsFlag bool
+	var isFlag bool
 	var isQuotedString bool
+	var foundProgramName bool
+	programName := c.Name()
+	args := strings.Fields(line)
 	for i, arg := range args {
-		if i == 0 {
-			args[i] = styles.Program.Name.Render(arg)
-			continue
+		isQuoteStart := arg[0] == '"'
+		isQuoteEnd := arg[len(arg)-1] == '"'
+		isFlagStart := arg[0] == '-'
+
+		if !foundProgramName {
+			if isQuotedString {
+				args[i] = styles.Program.QuotedString.PaddingRight(1).Render(arg)
+				if isQuoteEnd {
+					isQuotedString = false
+				}
+				continue
+			}
+			if left, right, ok := strings.Cut(arg, "="); ok {
+				args[i] = styles.Program.Flag.UnsetPadding().Render(left + "=")
+				if right[0] == '"' {
+					isQuotedString = true
+					args[i] += styles.Program.QuotedString.UnsetPadding().Render(right)
+				} else {
+					args[i] += styles.Program.Argument.UnsetPadding().PaddingRight(1).Render(right)
+				}
+				continue
+			}
+
+			if arg == programName {
+				args[i] = styles.Program.Name.Render(arg)
+				foundProgramName = true
+				continue
+			}
 		}
 
-		quoteStart := arg[0] == '"'
-		quoteEnd := arg[len(arg)-1] == '"'
-		flagStart := arg[0] == '-'
-		if i == 1 && !quoteStart && !flagStart {
+		if !isQuoteStart && !isFlagStart && isSubCommand(c, arg) {
 			args[i] = styles.Program.Command.Render(arg)
 			continue
 		}
-		if quoteStart {
+		if isQuoteStart {
 			isQuotedString = true
 		}
 		if isQuotedString {
 			args[i] = styles.Program.QuotedString.Render(arg)
-			if quoteEnd {
+			if isQuoteEnd {
 				isQuotedString = false
 			}
 			continue
 		}
-		if nextIsFlag {
+		if isFlag {
 			args[i] = styles.Program.Flag.Render(arg)
 			continue
 		}
@@ -259,7 +282,7 @@ func styleExample(c *cobra.Command, line string, styles Codeblock) string {
 				styles.Program.Flag.Render(dashes+name),
 			)
 			// if the flag is not a bool flag, next arg continues current flag
-			nextIsFlag = !isFlagBool(c, name)
+			isFlag = !isBoolFlag(c, name)
 			continue
 		}
 		args[i] = styles.Program.Argument.Render(arg)
@@ -331,7 +354,7 @@ func calculateSpace(k1, k2 []string) int {
 	return space
 }
 
-func isFlagBool(c *cobra.Command, name string) bool {
+func isBoolFlag(c *cobra.Command, name string) bool {
 	flag := c.Flags().Lookup(name)
 	if flag == nil && len(name) == 1 {
 		flag = c.Flags().ShorthandLookup(name)
@@ -340,4 +363,9 @@ func isFlagBool(c *cobra.Command, name string) bool {
 		return false
 	}
 	return flag.Value.Type() == "bool"
+}
+
+func isSubCommand(c *cobra.Command, arg string) bool {
+	cmd, _, _ := c.Traverse([]string{arg})
+	return cmd != nil && cmd.Name() == arg
 }

@@ -29,7 +29,7 @@ It doesn’t really do anything, but that’s the point.™`,
 example
 
 # Run it with some arguments:
-example --name=Carlos -a -s Becker -a
+FOO=bar ZAZ="quoted value" example --name=Carlos -a -s Becker -a
 
 # Run a subcommand with an argument:
 example sub --async --foo=xyz --async arguments
