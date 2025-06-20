@@ -226,7 +226,7 @@ func styleExample(c *cobra.Command, line string, indent bool, styles Codeblock) 
 			continue
 		}
 
-		if !foundProgramName {
+		if !foundProgramName { //nolint:nestif
 			if isQuotedString {
 				args[i] = styles.Program.QuotedString.PaddingRight(1).Render(arg)
 				isQuotedString = !isQuoteEnd
