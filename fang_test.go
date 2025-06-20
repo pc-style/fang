@@ -149,6 +149,9 @@ func TestSetup(t *testing.T) {
 # a comment about the usage
 simple [some arguments]
 
+# with environment variables
+FOO=bar BAR="quoted string" simple -b
+
 # another comment
 simple --string1=2 -s abc -b --bool1 --flag-not-found [args]
 			`,

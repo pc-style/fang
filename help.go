@@ -202,7 +202,6 @@ func styleExample(c *cobra.Command, line string, styles Codeblock) string {
 		)
 	}
 
-	var isFlag bool
 	var isQuotedString bool
 	var foundProgramName bool
 	programName := c.Name()
@@ -215,9 +214,7 @@ func styleExample(c *cobra.Command, line string, styles Codeblock) string {
 		if !foundProgramName {
 			if isQuotedString {
 				args[i] = styles.Program.QuotedString.PaddingRight(1).Render(arg)
-				if isQuoteEnd {
-					isQuotedString = false
-				}
+				isQuotedString = !isQuoteEnd
 				continue
 			}
 			if left, right, ok := strings.Cut(arg, "="); ok {
@@ -225,9 +222,9 @@ func styleExample(c *cobra.Command, line string, styles Codeblock) string {
 				if right[0] == '"' {
 					isQuotedString = true
 					args[i] += styles.Program.QuotedString.UnsetPadding().Render(right)
-				} else {
-					args[i] += styles.Program.Argument.UnsetPadding().PaddingRight(1).Render(right)
+					continue
 				}
+				args[i] += styles.Program.Argument.UnsetPadding().PaddingRight(1).Render(right)
 				continue
 			}
 
@@ -242,36 +239,20 @@ func styleExample(c *cobra.Command, line string, styles Codeblock) string {
 			args[i] = styles.Program.Command.Render(arg)
 			continue
 		}
-		if isQuoteStart {
-			isQuotedString = true
-		}
+		isQuotedString = isQuotedString || isQuoteStart
 		if isQuotedString {
 			args[i] = styles.Program.QuotedString.Render(arg)
-			if isQuoteEnd {
-				isQuotedString = false
-			}
+			isQuotedString = !isQuoteEnd
 			continue
-		}
-		if isFlag {
-			args[i] = styles.Program.Flag.Render(arg)
-			continue
-		}
-		var dashes string
-		if strings.HasPrefix(arg, "-") {
-			dashes = "-"
-		}
-		if strings.HasPrefix(arg, "--") {
-			dashes = "--"
 		}
 		// handle a flag
-		if dashes != "" {
+		if arg[0] == '-' {
 			name, value, ok := strings.Cut(arg, "=")
-			name = strings.TrimPrefix(name, dashes)
 			// it is --flag=value
 			if ok {
 				args[i] = lipgloss.JoinHorizontal(
 					lipgloss.Left,
-					styles.Program.Flag.Render(dashes+name+"="),
+					styles.Program.Flag.Render(name+"="),
 					styles.Program.Argument.UnsetPadding().Render(value),
 				)
 				continue
@@ -279,10 +260,8 @@ func styleExample(c *cobra.Command, line string, styles Codeblock) string {
 			// it is either --bool-flag or --flag value
 			args[i] = lipgloss.JoinHorizontal(
 				lipgloss.Left,
-				styles.Program.Flag.Render(dashes+name),
+				styles.Program.Flag.Render(name),
 			)
-			// if the flag is not a bool flag, next arg continues current flag
-			isFlag = !isBoolFlag(c, name)
 			continue
 		}
 		args[i] = styles.Program.Argument.Render(arg)
@@ -352,17 +331,6 @@ func calculateSpace(k1, k2 []string) int {
 		space = max(space, lipgloss.Width(k)+spaceBetween)
 	}
 	return space
-}
-
-func isBoolFlag(c *cobra.Command, name string) bool {
-	flag := c.Flags().Lookup(name)
-	if flag == nil && len(name) == 1 {
-		flag = c.Flags().ShorthandLookup(name)
-	}
-	if flag == nil {
-		return false
-	}
-	return flag.Value.Type() == "bool"
 }
 
 func isSubCommand(c *cobra.Command, arg string) bool {

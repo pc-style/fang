@@ -38,7 +38,7 @@ example sub --async --foo=xyz --async arguments
 example sub "quoted string"
 
 # Mix and match:
-example sub "multi-word quoted string" --flag "another quoted string"
+example sub "multi-word quoted string" --name "another quoted string" -a
 		`,
 
 		RunE: func(c *cobra.Command, _ []string) error {
