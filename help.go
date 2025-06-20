@@ -182,24 +182,34 @@ func styleExamples(c *cobra.Command, styles Styles) []string {
 	}
 	usage := []string{}
 	examples := strings.Split(c.Example, "\n")
+	var indent bool
 	for i, line := range examples {
 		line = strings.TrimSpace(line)
 		if (i == 0 || i == len(examples)-1) && line == "" {
 			continue
 		}
-		s := styleExample(c, line, styles.Codeblock)
+		s := styleExample(c, line, indent, styles.Codeblock)
 		usage = append(usage, s)
+		indent = len(line) > 1 && line[len(line)-1] == '\\'
 	}
 
 	return usage
 }
 
-func styleExample(c *cobra.Command, line string, styles Codeblock) string {
+func styleExample(c *cobra.Command, line string, indent bool, styles Codeblock) string {
 	if strings.HasPrefix(line, "# ") {
 		return lipgloss.JoinHorizontal(
 			lipgloss.Left,
 			styles.Comment.Render(line),
 		)
+	}
+
+	padding := func() int {
+		if !indent {
+			return 0
+		}
+		indent = false
+		return 2
 	}
 
 	var isQuotedString bool
@@ -211,6 +221,11 @@ func styleExample(c *cobra.Command, line string, styles Codeblock) string {
 		isQuoteEnd := arg[len(arg)-1] == '"'
 		isFlagStart := arg[0] == '-'
 
+		if i == len(args)-1 && len(arg) == 1 && arg[0] == '\\' {
+			args[i] = styles.Program.DimmedArgument.UnsetPadding().Render(arg)
+			continue
+		}
+
 		if !foundProgramName {
 			if isQuotedString {
 				args[i] = styles.Program.QuotedString.PaddingRight(1).Render(arg)
@@ -218,7 +233,7 @@ func styleExample(c *cobra.Command, line string, styles Codeblock) string {
 				continue
 			}
 			if left, right, ok := strings.Cut(arg, "="); ok {
-				args[i] = styles.Program.Flag.UnsetPadding().Render(left + "=")
+				args[i] = styles.Program.Flag.UnsetPadding().PaddingLeft(padding()).Render(left + "=")
 				if right[0] == '"' {
 					isQuotedString = true
 					args[i] += styles.Program.QuotedString.UnsetPadding().Render(right)
@@ -229,7 +244,7 @@ func styleExample(c *cobra.Command, line string, styles Codeblock) string {
 			}
 
 			if arg == programName {
-				args[i] = styles.Program.Name.Render(arg)
+				args[i] = styles.Program.Name.PaddingLeft(padding()).Render(arg)
 				foundProgramName = true
 				continue
 			}

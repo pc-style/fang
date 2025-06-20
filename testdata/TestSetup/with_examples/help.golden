@@ -18,6 +18,11 @@
                                            
     # another comment                      
     simple --string1=2 -s abc -b --bool1…  
+                                           
+    # multi line example:                  
+    ENV_A=0 ENV_B=0 ENV_C=0 \              
+      CERT_FILE=/path/to/chain.pem KEY_F…  
+      simple --bool1                       
                                            
             
   COMMANDS  

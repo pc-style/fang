@@ -154,6 +154,11 @@ FOO=bar BAR="quoted string" simple -b
 
 # another comment
 simple --string1=2 -s abc -b --bool1 --flag-not-found [args]
+
+# multi line example:
+ENV_A=0 ENV_B=0 ENV_C=0 \
+    CERT_FILE=/path/to/chain.pem KEY_FILE=/path/to/key.pem \
+    simple --bool1
 			`,
 		}
 

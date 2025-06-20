@@ -39,6 +39,11 @@ example sub "quoted string"
 
 # Mix and match:
 example sub "multi-word quoted string" --name "another quoted string" -a
+
+# Multi-line:
+ENV_A=0 ENV_B=0 ENV_C=0 \
+  CERT_FILE=/path/to/chain.pem KEY_FILE=/path/to/key.pem \
+  example sub "quoted argument"
 		`,
 
 		RunE: func(c *cobra.Command, _ []string) error {
