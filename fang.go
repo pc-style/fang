@@ -20,12 +20,15 @@ const shaLen = 7
 // ErrorHandler handles an error, printing them to the given [io.Writer].
 type ErrorHandler = func(w io.Writer, styles Styles, err error)
 
+// ColorSchemeFunc gets a [lipgloss.LightDarkFunc] and returns a [ColorScheme].
+type ColorSchemeFunc = func(lipgloss.LightDarkFunc) ColorScheme
+
 type settings struct {
 	completions bool
 	manpages    bool
 	version     string
 	commit      string
-	colorscheme func(lipgloss.LightDarkFunc) ColorScheme
+	colorscheme ColorSchemeFunc
 	errHandler  ErrorHandler
 }
 
@@ -47,13 +50,14 @@ func WithoutManpage() Option {
 }
 
 // WithColorSchemeFunc sets a function that return colorscheme.
-func WithColorSchemeFunc(cs func(lipgloss.LightDarkFunc) ColorScheme) Option {
+func WithColorSchemeFunc(cs ColorSchemeFunc) Option {
 	return func(s *settings) {
 		s.colorscheme = cs
 	}
 }
 
 // WithTheme sets the colorscheme.
+//
 // Deprecated: use [WithColorSchemeFunc] instead.
 func WithTheme(theme ColorScheme) Option {
 	return func(s *settings) {
