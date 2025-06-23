@@ -1,7 +1,7 @@
 # Fang
 
 <p>
-    <img width="485" alt="Charm Fang" src="https://github.com/user-attachments/assets/3f34ea01-3750-4760-beb2-a1b700e110f5">   
+    <img width="485" alt="Charm Fang" src="https://github.com/user-attachments/assets/3f34ea01-3750-4760-beb2-a1b700e110f5">
 </p>
 <p>
     <a href="https://github.com/charmbracelet/fang/releases"><img src="https://img.shields.io/github/release/charmbracelet/fang.svg" alt="Latest Release"></a>
@@ -57,7 +57,7 @@ func main() {
 		Use:   "example",
 		Short: "A simple example program!",
 	}
-	if err := fang.Execute(context.TODO(), cmd); err != nil {
+	if err := fang.Execute(context.Background(), cmd); err != nil {
 		os.Exit(1)
 	}
 }
