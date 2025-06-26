@@ -152,8 +152,10 @@ var otherArgsRe = regexp.MustCompile(`(\[.*\])`)
 
 // styleUsage stylized styleUsage line for a given command.
 func styleUsage(c *cobra.Command, styles Program, complete bool) string {
-	// XXX: maybe use c.UseLine() here?
 	u := c.Use
+	if complete {
+		u = c.UseLine()
+	}
 	hasArgs := strings.Contains(u, "[args]")
 	hasFlags := strings.Contains(u, "[flags]") || strings.Contains(u, "[--flags]") || c.HasFlags() || c.HasPersistentFlags() || c.HasAvailableFlags()
 	hasCommands := strings.Contains(u, "[command]") || c.HasAvailableSubCommands()
@@ -246,8 +248,9 @@ func styleExample(c *cobra.Command, line string, indent bool, styles Codeblock) 
 
 	var isQuotedString bool
 	var foundProgramName bool
-	programName := c.Name()
+	programName := c.Root().Name()
 	args := strings.Fields(line)
+	var cleanArgs []string
 	for i, arg := range args {
 		isQuoteStart := arg[0] == '"'
 		isQuoteEnd := arg[len(arg)-1] == '"'
@@ -282,7 +285,11 @@ func styleExample(c *cobra.Command, line string, indent bool, styles Codeblock) 
 			}
 		}
 
-		if !isQuoteStart && !isFlagStart && isSubCommand(c, arg) {
+		if !isQuoteStart && !isQuotedString && !isFlagStart {
+			cleanArgs = append(cleanArgs, arg)
+		}
+
+		if !isQuoteStart && !isFlagStart && isSubCommand(c, cleanArgs, arg) {
 			args[i] = styles.Program.Command.Render(arg)
 			continue
 		}
@@ -408,7 +415,7 @@ func calculateSpace(k1, k2 []string) int {
 	return space
 }
 
-func isSubCommand(c *cobra.Command, arg string) bool {
-	cmd, _, _ := c.Traverse([]string{arg})
-	return cmd != nil && cmd.Name() == arg
+func isSubCommand(c *cobra.Command, args []string, word string) bool {
+	cmd, _, _ := c.Root().Traverse(args)
+	return cmd != nil && cmd.Name() == word
 }

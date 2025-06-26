@@ -44,6 +44,9 @@ example sub "multi-word quoted string" --name "another quoted string" -a
 ENV_A=0 ENV_B=0 ENV_C=0 \
   CERT_FILE=/path/to/chain.pem KEY_FILE=/path/to/key.pem \
   example sub "quoted argument"
+
+# Run a subcommand's subcommand with an argument:
+example sub another args --flag
 		`,
 
 		RunE: func(c *cobra.Command, _ []string) error {
@@ -71,13 +74,21 @@ ENV_A=0 ENV_B=0 ENV_C=0 \
 		ID:    "group1",
 		Title: "My Group",
 	})
-	cmd.AddCommand(&cobra.Command{
+	sub := &cobra.Command{
 		Use:     "sub [command] [flags] [args]",
 		Short:   "An example subcommand",
 		GroupID: "group1",
+		Example: `example sub some arguments --and-flags
+example sub another --thing`,
 		Run: func(c *cobra.Command, _ []string) {
 			c.Println("Ran the sub command!")
 		},
+	}
+	cmd.AddCommand(sub)
+	sub.AddCommand(&cobra.Command{
+		Use:     "another",
+		Short:   "another sub command",
+		Example: `example sub another --foo=bar`,
 	})
 
 	cmd.AddCommand(&cobra.Command{
