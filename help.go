@@ -175,11 +175,15 @@ func styleUsage(c *cobra.Command, styles Program, complete bool) string {
 
 	u = strings.TrimSpace(u)
 
-	useLine := []string{
-		styles.Name.Render(u),
-	}
-	if !complete {
-		useLine[0] = styles.Command.Render(u)
+	useLine := []string{}
+	if complete {
+		parts := strings.Fields(u)
+		useLine = append(useLine, styles.Name.Render(parts[0]))
+		if len(parts) > 1 {
+			useLine = append(useLine, styles.Command.Render(strings.Join(parts[1:], " ")))
+		}
+	} else {
+		useLine = append(useLine, styles.Command.Render(u))
 	}
 	if hasCommands {
 		useLine = append(
