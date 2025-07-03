@@ -96,6 +96,16 @@ func TestSetup(t *testing.T) {
 		})
 	})
 
+	t.Run("without version", func(t *testing.T) {
+		doExercise(
+			t,
+			toMkroot(&cobra.Command{Use: "simple"}),
+			[]string{"--version"},
+			assertError,
+			fang.WithoutVersion(),
+		)
+	})
+
 	t.Run("with version and hash", func(t *testing.T) {
 		exercise(
 			t,
