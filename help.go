@@ -8,6 +8,7 @@ import (
 	"os"
 	"reflect"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -304,7 +305,7 @@ func styleExample(c *cobra.Command, line string, indent bool, styles Codeblock) 
 				continue
 			}
 
-			if arg == programName {
+			if arg == programName || slices.Contains(c.Root().Aliases, arg) {
 				args[i] += styles.Program.Name.Render(arg)
 				foundProgramName = true
 				continue
@@ -443,7 +444,7 @@ func calculateSpace(k1, k2 []string) int {
 
 func isSubCommand(c *cobra.Command, args []string, word string) bool {
 	cmd, _, _ := c.Root().Traverse(args)
-	return cmd != nil && cmd.Name() == word
+	return cmd != nil && cmd.Name() == word || slices.Contains(cmd.Aliases, word)
 }
 
 var redirectPrefixes = []string{">", "<", "&>", "2>", "1>", ">>", "2>>"}
